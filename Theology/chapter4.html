@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter 4: Social Teachings of the Church</title>
+  <style>
+    :root {
+      --bg: #0d1117; --card-bg: #161b22; --border: #30363d; --text: #c9d1d9;
+      --text-heading: #f0f6fc; --text-muted: #8b949e; --accent: #58a6ff;
+      --accent-hover: #1f6feb; --accent-glow: rgba(88, 166, 255, 0.12);
+      --correct-bg: rgba(46, 160, 67, 0.15); --correct-border: #2ea043; --correct-text: #3fb950;
+      --wrong-bg: rgba(248, 81, 73, 0.15); --wrong-border: #f85149; --wrong-text: #ff7b72; --radius: 8px;
+    }
+    [data-theme="light"] {
+      --bg: #f6f8fa; --card-bg: #ffffff; --border: #d0d7de; --text: #24292f;
+      --text-heading: #0969da; --text-muted: #57606a; --accent: #0969da;
+      --accent-hover: #084298; --accent-glow: rgba(9, 105, 218, 0.08);
+      --correct-bg: #dafbe1; --correct-border: #1a7f37; --correct-text: #1a7f37;
+      --wrong-bg: #ffebe9; --wrong-border: #cf222e; --wrong-text: #cf222e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg); color: var(--text); line-height: 1.6;
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 1.5rem 1rem;
+    }
+    .container { width: 100%; max-width: 860px; }
+    header {
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: center; }
+    h1 { font-size: 1.35rem; color: var(--text-heading); font-weight: 600; }
+    .nav-actions { display: flex; gap: 0.5rem; }
+    .btn-action-sm {
+      background: transparent; border: 1px solid var(--border); color: var(--text);
+      padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; text-decoration: none; transition: all 0.2s;
+    }
+    .btn-action-sm:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem; }
+    .filter-btn {
+      background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+      padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s;
+    }
+    .filter-btn.active, .filter-btn:hover { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+    .progress-track { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.3s ease; }
+    .meta-status { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); }
+    
+    .grid-jump {
+      display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 1.25rem; padding: 0.75rem;
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); max-height: 135px; overflow-y: auto;
+    }
+    .grid-btn {
+      width: 28px; height: 28px; border-radius: 4px; border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .grid-btn.current { border-color: var(--accent); color: var(--accent); font-weight: bold; }
+    .grid-btn.answered-correct { background: var(--correct-bg); border-color: var(--correct-border); color: var(--correct-text); }
+    .grid-btn.answered-wrong { background: var(--wrong-bg); border-color: var(--wrong-border); color: var(--wrong-text); }
+    
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; margin-bottom: 1.25rem; }
+    .category-badge { display: inline-block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 0.75rem; font-weight: 600; }
+    .question-title { font-size: 1.15rem; color: var(--text-heading); margin-bottom: 1.25rem; font-weight: 500; }
+    
+    /* MCQ Specific Styles */
+    .options-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+    .option-item {
+      display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.9rem 1rem;
+      background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 0.95rem; color: var(--text);
+    }
+    .option-item:hover:not(.disabled) { border-color: var(--accent); background: var(--accent-glow); }
+    .option-item.correct { background: var(--correct-bg) !important; border-color: var(--correct-border) !important; color: var(--correct-text) !important; }
+    .option-item.wrong { background: var(--wrong-bg) !important; border-color: var(--wrong-border) !important; color: var(--wrong-text) !important; }
+    .option-key { font-weight: 600; color: var(--text-muted); min-width: 1.25rem; }
+
+    /* Identification Specific Styles */
+    .ident-container { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem; }
+    .ident-input {
+      width: 100%; padding: 1rem; font-size: 1rem; background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border); border-radius: 6px; color: var(--text); outline: none; transition: border-color 0.2s;
+    }
+    .ident-input:focus { border-color: var(--accent); }
+    .ident-input:disabled { opacity: 0.6; cursor: not-allowed; }
+    .type-badge { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px; background: var(--border); color: var(--text); float: right; margin-top: -0.2rem; }
+    
+    .explanation-panel { margin-top: 1.25rem; padding: 1rem; border-radius: 6px; font-size: 0.95rem; display: none; line-height: 1.6; }
+    .explanation-panel.show { display: block; }
+    .explanation-panel.correct { background: var(--correct-bg); border: 1px solid var(--correct-border); color: var(--correct-text); }
+    .explanation-panel.wrong { background: var(--wrong-bg); border: 1px solid var(--wrong-border); color: var(--wrong-text); }
+    
+    .override-btn {
+      background: transparent; border: 1px solid var(--correct-border); color: var(--correct-text);
+      padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer; margin-top: 0.75rem; display: inline-block;
+    }
+    .override-btn:hover { background: var(--correct-border); color: #fff; }
+
+    .nav-controls { display: flex; justify-content: space-between; margin-top: 1.5rem; align-items: center; }
+    .btn {
+      background: var(--accent); color: #ffffff; border: none; padding: 0.65rem 1.3rem;
+      border-radius: 6px; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: background 0.2s;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    
+    .summary-card { display: none; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; text-align: center; }
+    .summary-score { font-size: 3rem; font-weight: 700; color: var(--accent); margin: 1rem 0; }
+    .review-list { margin-top: 2rem; text-align: left; display: flex; flex-direction: column; gap: 1rem; }
+    .review-item { padding: 1rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; }
+    .review-item.pass { border-left: 4px solid var(--correct-border); }
+    .review-item.fail { border-left: 4px solid var(--wrong-border); }
+  </style>
+</head>
+<body data-theme="dark">
+<div class="container">
+  <header>
+    <div class="header-top">
+      <h1>Chapter 4: Social Teachings of the Church</h1>
+      <div class="nav-actions">
+        <a href="../index.html" class="btn-action-sm">← Master Directory</a>
+        <button class="btn-action-sm" onclick="toggleTheme()">Theme</button>
+      </div>
+    </div>
+    <div class="filter-bar" id="category-filters"></div>
+    <div class="progress-track"><div class="progress-fill" id="progress-bar"></div></div>
+    <div class="meta-status">
+      <span id="question-indicator">Question 1 of --</span>
+      <span id="score-indicator">Score: 0 / 0</span>
+    </div>
+  </header>
+
+  <div class="grid-jump" id="grid-jump"></div>
+
+  <div class="card" id="quiz-card">
+    <div>
+      <span class="category-badge" id="cat-badge">Category</span>
+      <span class="type-badge" id="type-badge">Question Type</span>
+    </div>
+    <h2 class="question-title" id="question-text">Question Prompt</h2>
+    
+    <!-- MCQ Container -->
+    <div class="options-grid" id="options-box" style="display: none;"></div>
+
+    <!-- Identification Container -->
+    <div class="ident-container" id="ident-box" style="display: none;">
+      <input type="text" id="ident-input" class="ident-input" placeholder="Type your answer here..." autocomplete="off" />
+      <button id="check-btn" class="btn" onclick="checkIdentAnswer()">Submit Answer</button>
+    </div>
+
+    <div class="explanation-panel" id="explanation-box"></div>
+    
+    <div class="nav-controls">
+      <button class="btn btn-secondary" id="prev-btn" onclick="prevQuestion()" disabled>&larr; Previous</button>
+      <button class="btn btn-secondary" id="next-btn" onclick="nextQuestion()" style="display: none;">Next &rarr;</button>
+    </div>
+  </div>
+
+  <div class="summary-card" id="summary-card">
+    <h2>Chapter 4 Completed</h2>
+    <div class="summary-score" id="final-score-display">0%</div>
+    <p id="final-remark" style="color: var(--text-muted);"></p>
+    <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; justify-content: center;">
+      <a href="../index.html" class="btn btn-secondary" style="text-decoration:none; display:inline-block;">Return Home</a>
+      <button class="btn" onclick="resetQuiz()">Retake Quiz</button>
+    </div>
+    <div class="review-list" id="review-container"></div>
+  </div>
+</div>
+
+<script>
+// Comprehensive Hybrid Data Structure for Chapter 4
+const questions = [
+  // SECTION I: Nature and Rationalization
+  {
+    type: "ident",
+    category: "Nature and Rationalization",
+    q: "What concept states that the human person uniquely possesses the capacity for God and is the central figure of God's creation?",
+    accepted: ["imago dei", "image of god"],
+    displayAnswer: "Imago Dei (Image of God)",
+    note: "The human person as the Image of God (Imago Dei) uniquely possesses the capacity for God."
+  },
+  {
+    type: "ident",
+    category: "Nature and Rationalization",
+    q: "Human dignity is described as inalienable and what other term, meaning it can never be compromised under any circumstances?",
+    accepted: ["inviolable"],
+    displayAnswer: "Inviolable",
+    note: "Human dignity is inviolable and inalienable; it can never be compromised."
+  },
+  {
+    type: "mcq",
+    category: "Nature and Rationalization",
+    q: "According to the Social Teachings of the Church, which of the following serves as the ultimate affirmation of human dignity?",
+    options: [
+      "The drafting of the Universal Declaration of Human Rights.",
+      "The coming of Christ (the Incarnation) and his Paschal Mystery (the Cross).",
+      "The establishment of the basic ecclesial communities.",
+      "The separation of Church and State."
+    ],
+    answer: 1,
+    note: "The coming of Christ (the Incarnation) and his Paschal Mystery (the Cross) serve as the ultimate affirmation of human dignity."
+  },
+  {
+    type: "ident",
+    category: "Nature and Rationalization",
+    q: "According to the text, what is the highest and universal criterion of social ethics?",
+    accepted: ["love"],
+    displayAnswer: "Love",
+    note: "Love is the highest and universal criterion of social ethics. It presupposes and transcends justice."
+  },
+  {
+    type: "mcq",
+    category: "Nature and Rationalization",
+    q: "How does the paradigm of love relate to justice in Catholic Social Teaching?",
+    options: [
+      "Love completely replaces the need for justice.",
+      "Justice is the prerequisite of love, and love fulfills justice.",
+      "Justice must be achieved entirely through violence before love can exist.",
+      "Love and justice are completely unrelated concepts."
+    ],
+    answer: 1,
+    note: "Without justice, love cannot survive; justice is the prerequisite of love, and love fulfills justice."
+  },
+  {
+    type: "ident",
+    category: "Nature and Rationalization",
+    q: "What Roman maxim mentioned by Cicero means 'extreme justice is the greatest injustice'?",
+    accepted: ["summum ius summa iniuria", "summum ius, summa iniuria", "summum jus summa injuria"],
+    displayAnswer: "Summum ius, summa iniuria",
+    note: "Summum ius, summa iniuria: A world governed solely by cold justice without mercy is unlivable."
+  },
+  {
+    type: "ident",
+    category: "Nature and Rationalization",
+    q: "What type of charity extends beyond individual relationships to the communal and political sphere to seek the common good?",
+    accepted: ["social and political charity", "social charity", "political charity"],
+    displayAnswer: "Social and Political Charity",
+    note: "Grounded in Christian love and solidarity, this extends beyond individual relationships to the communal and political sphere."
+  },
+  {
+    type: "mcq",
+    category: "Nature and Rationalization",
+    q: "What does the principle of the 'Universal Destination of Goods' call for?",
+    options: [
+      "The complete abolition of all private property.",
+      "A fair distribution of wealth and resources to counter extreme economic disparities.",
+      "The forced migration of wealth to developing nations exclusively.",
+      "The concentration of goods in the hands of the spiritually pure."
+    ],
+    answer: 1,
+    note: "This principle calls for a fair distribution of wealth and resources to counter extreme economic disparities."
+  },
+  {
+    type: "mcq",
+    category: "Nature and Rationalization",
+    q: "How does natural law unite diverse cultures according to the text?",
+    options: [
+      "By establishing a single global government.",
+      "Under common moral principles, as the glory of God shines on every individual.",
+      "By erasing all cultural and linguistic differences.",
+      "Through the forced enforcement of canon law."
+    ],
+    answer: 1,
+    note: "Natural law unites diverse cultures under common moral principles, as the glory of God shines on every individual."
+  },
+
+  // SECTION II: Church and State Relations
+  {
+    type: "mcq",
+    category: "Church and State Relations",
+    q: "The modern principle of the separation of Church and State was historically a reaction to what?",
+    options: [
+      "The rise of democracy in the 20th century.",
+      "Medieval church-sponsored states and religious persecution.",
+      "The invention of the printing press.",
+      "The establishment of the United Nations."
+    ],
+    answer: 1,
+    note: "Historically a reaction to medieval church-sponsored states and religious persecution."
+  },
+  {
+    type: "ident",
+    category: "Church and State Relations",
+    q: "To respect the autonomy of the State, the Church prohibits its priests and ministers from running for what?",
+    accepted: ["public office", "office", "government office", "political office"],
+    displayAnswer: "Public office",
+    note: "The Church prohibits its priests and ministers from running for public office to preserve the State's role as an agent of unity."
+  },
+  {
+    type: "mcq",
+    category: "Church and State Relations",
+    q: "According to Pope Benedict XVI in Deus Caritas Est, what is the Church's proper role regarding the State and justice?",
+    options: [
+      "The Church must completely replace the State to enforce moral law.",
+      "The Church must remain entirely on the sidelines to maintain separation.",
+      "The Church cannot replace the State, but must not remain on the sidelines in the fight for justice.",
+      "The Church should run candidates for all public offices to ensure justice."
+    ],
+    answer: 2,
+    note: "'The Church cannot and must not replace the State. Yet at the same time she cannot and must not remain on the sidelines in the fight for justice.'"
+  },
+  {
+    type: "ident",
+    category: "Church and State Relations",
+    q: "The Church retains the right and duty to pass moral judgments on public orders when fundamental human rights or the salvation of what demand it?",
+    accepted: ["souls", "soul"],
+    displayAnswer: "Souls",
+    note: "The Church retains the right and duty to pass moral judgments when fundamental human rights or the salvation of souls demand it (Gaudium et Spes, 76)."
+  },
+  {
+    type: "ident",
+    category: "Church and State Relations",
+    q: "The cooperative relationship between the Church and State is compared to the two wheels of what vehicle?",
+    accepted: ["bicycle", "bike"],
+    displayAnswer: "A bicycle",
+    note: "The relationship is compared to two wheels of a bicycle moving in the same direction to serve humanity."
+  },
+
+  // SECTION III: The Way of Violence
+  {
+    type: "mcq",
+    category: "The Way of Love vs. Violence",
+    q: "Why does the Church consider violence a 'lie' and firmly reject armed struggle?",
+    options: [
+      "Because violence is economically inefficient.",
+      "Because it destroys human dignity, life, and freedom—the very things it claims to defend.",
+      "Because only the State has the logistical capacity for violence.",
+      "Because armed struggle requires too much coordination."
+    ],
+    answer: 1,
+    note: "Violence is considered a 'lie' because it destroys human dignity, life, and freedom—the very things it claims to defend."
+  },
+
+  // SECTION IV: PCP-II and Pastoral Priorities
+  {
+    type: "ident",
+    category: "PCP-II Vision",
+    q: "What does the acronym PCP-II stand for?",
+    accepted: ["second plenary council of the philippines", "2nd plenary council of the philippines", "plenary council of the philippines ii"],
+    displayAnswer: "Second Plenary Council of the Philippines",
+    note: "PCP-II stands for the Second Plenary Council of the Philippines."
+  },
+  {
+    type: "ident",
+    category: "PCP-II Vision",
+    q: "PCP-II envisions the Philippine Church as a 'Community of _________'.",
+    accepted: ["disciples"],
+    displayAnswer: "Disciples",
+    note: "PCP-II envisions the Philippine Church as a Community of Disciples."
+  },
+  {
+    type: "mcq",
+    category: "PCP-II Vision",
+    q: "Through renewed integral evangelization, PCP-II envisions the Community of Disciples opting to be a:",
+    options: ["Church of the Elite", "Church of the Academics", "Church of the Poor", "Church of the State"],
+    answer: 2,
+    note: "It envisions the Philippine Church as a Community of Disciples that opts to be a Church of the Poor."
+  },
+  {
+    type: "ident",
+    category: "9 Pastoral Priorities",
+    q: "Which of the 9 pastoral priorities involves developing a discerning faith that recognizes God’s actions in daily life?",
+    accepted: ["integral faith formation", "faith formation"],
+    displayAnswer: "Integral Faith Formation",
+    note: "Integral Faith Formation: Developing a discerning faith that recognizes God’s actions in daily life."
+  },
+  {
+    type: "ident",
+    category: "9 Pastoral Priorities",
+    q: "The pastoral priority of 'Empowerment of the Laity' aims to promote the unique what of lay people?",
+    accepted: ["charisms", "charism", "gifts"],
+    displayAnswer: "Charisms",
+    note: "Empowerment of the Laity toward Social Transformation promotes the unique charisms of lay people."
+  },
+  {
+    type: "mcq",
+    category: "9 Pastoral Priorities",
+    q: "The pastoral priority of 'Active Presence and Participation of the Poor' calls the Church to do what?",
+    options: [
+      "Provide them solely with financial aid.",
+      "Learn from the poor, become evangelically poor, and liberate ourselves from exclusive lifestyles.",
+      "Encourage the poor to leave the Church and seek government help.",
+      "Assign the poor to manage the financial assets of the parish."
+    ],
+    answer: 1,
+    note: "It involves learning from the poor, becoming evangelically poor, and liberating ourselves from lifestyles that exclude them."
+  },
+  {
+    type: "ident",
+    category: "9 Pastoral Priorities",
+    q: "Which focal point in the 9 pastoral priorities is nurtured as the 'basic cell of the Church and society'?",
+    accepted: ["family", "the family"],
+    displayAnswer: "The Family",
+    note: "The Family as the Focal Point of Evangelization: Nurturing the family as the basic cell of the Church and society."
+  },
+  {
+    type: "mcq",
+    category: "9 Pastoral Priorities",
+    q: "Why is 'Journeying with the Youth' explicitly highlighted as a pastoral priority?",
+    options: [
+      "Because they are the main financial contributors to the Church.",
+      "Because they are highly vulnerable to digital and societal shifts.",
+      "Because they exclusively lead the Basic Ecclesial Communities.",
+      "Because they are exempt from normal Church laws."
+    ],
+    answer: 1,
+    note: "Journeying with the youth involves mentoring and supporting them, as they are highly vulnerable to digital and societal shifts."
+  },
+  {
+    type: "ident",
+    category: "9 Pastoral Priorities",
+    q: "The priority of 'Integral Renewal of the Clergy' fosters what specific kind of leadership modeled after the poor Christ?",
+    accepted: ["servant-leadership", "servant leadership", "servant"],
+    displayAnswer: "Servant-leadership",
+    note: "Fostering servant-leadership and aligning priestly lifestyles with the simplicity of the poor Christ."
+  },
+  {
+    type: "ident",
+    category: "9 Pastoral Priorities",
+    q: "Building participatory communities envisions the Parish as a 'Community of _________'?",
+    accepted: ["communities"],
+    displayAnswer: "Communities",
+    note: "Parish as a 'Community of Communities' develops structures for collective decision-making."
+  },
+  {
+    type: "mcq",
+    category: "9 Pastoral Priorities",
+    q: "What is the primary goal of the priority 'Ecumenism and Inter-religious Dialogue'?",
+    options: [
+      "Converting all other religions to Catholicism through force.",
+      "Overcoming religious prejudices and actively pursuing peace, particularly with Muslim communities.",
+      "Merging all religions into one global secular faith.",
+      "Isolating the Catholic Church from outside cultural influences."
+    ],
+    answer: 1,
+    note: "Overcoming religious prejudices and actively pursuing peace, particularly with Muslim communities."
+  },
+  {
+    type: "ident",
+    category: "9 Pastoral Priorities",
+    q: "What Latin term is used for the animation and formation for missions, aiming to make Filipinos the foremost missionaries for Asia?",
+    accepted: ["missio ad gentes", "missio ad gentes"],
+    displayAnswer: "Missio Ad Gentes",
+    note: "Animation and Formation for 'Missio Ad Gentes' aims to transform Filipinos into missionaries for Asia."
+  },
+
+  // SECTION V: Communitarian Faith
+  {
+    type: "ident",
+    category: "Basic Ecclesial Communities",
+    q: "What does the acronym BEC stand for?",
+    accepted: ["basic ecclesial communities", "basic ecclesial community"],
+    displayAnswer: "Basic Ecclesial Communities",
+    note: "BEC stands for Basic Ecclesial Communities."
+  },
+  {
+    type: "mcq",
+    category: "Basic Ecclesial Communities",
+    q: "Basic Ecclesial Communities (BECs) are patterned after what early Christian concept?",
+    options: ["The Roman Senate", "Domus Ecclesia (House Church)", "The High Sanhedrin", "The Monastic Desert Fathers"],
+    answer: 1,
+    note: "Patterned after the early Christian Domus Ecclesia (House Church)."
+  },
+  {
+    type: "mcq",
+    category: "Basic Ecclesial Communities",
+    q: "Which of the following is NOT an activity typical of a Basic Ecclesial Community (BEC)?",
+    options: [
+      "Sharing both spiritual and material resources.",
+      "Praying and reading the Word of God together.",
+      "Organizing community action for justice and social transformation.",
+      "Replacing the parish priest with exclusively lay leaders."
+    ],
+    answer: 3,
+    note: "Replacing the priest is not a function; BECs share resources, pray, and organize for justice."
+  },
+  {
+    type: "ident",
+    category: "Role of the Laity",
+    q: "The laity are called to sanctify the world 'from within like ___________.'",
+    accepted: ["leaven", "yeast"],
+    displayAnswer: "Leaven",
+    note: "Laity are called to sanctify the world 'from within like leaven.'"
+  },
+  {
+    type: "mcq",
+    category: "Role of the Laity",
+    q: "How do the laity uniquely exercise their priestly, prophetic, and kingly missions?",
+    options: [
+      "By living isolated lives in monasteries.",
+      "By bringing faith into temporal areas like family life, work, science, and socio-political duties.",
+      "By performing the sacraments in place of the ordained clergy.",
+      "By strictly avoiding any participation in modern culture."
+    ],
+    answer: 1,
+    note: "By bringing faith into temporal areas: family life, work, science, culture, and socio-political duties."
+  },
+
+  // SECTION VI: Dialogue, Advocacy, New Evangelization
+  {
+    type: "ident",
+    category: "Culture of Dialogue",
+    q: "What Philippine conversational habit translates to 'Where are you going?' and facilitates a culture of dialogue?",
+    accepted: ["saan ka pupunta", "saan ka pupunta?"],
+    displayAnswer: "Saan ka pupunta?",
+    note: "In the Philippine context, dialogue is naturally facilitated by conversational habits like 'Saan ka pupunta?' or 'Kumusta?'"
+  },
+  {
+    type: "ident",
+    category: "New Evangelization",
+    q: "Which pope popularized the term 'New Evangelization' in his 1992 encyclical Redemptoris Missio?",
+    accepted: ["pope john paul ii", "john paul ii", "st john paul ii"],
+    displayAnswer: "Pope John Paul II",
+    note: "A term popularized by Pope John Paul II in Redemptoris Missio (1992)."
+  },
+  {
+    type: "mcq",
+    category: "New Evangelization",
+    q: "What is the primary goal of the New Evangelization?",
+    options: [
+      "To physically rebuild ancient churches in Europe.",
+      "To revitalize Christian faith in heavily secularized societies.",
+      "To create new sacraments for the modern era.",
+      "To evangelize previously undiscovered continents."
+    ],
+    answer: 1,
+    note: "To revitalize Christian faith in heavily secularized societies."
+  },
+  {
+    type: "ident",
+    category: "New Evangelization",
+    q: "What type of evangelization shows Christ-like love and joyful unity within communities in order to draw others in?",
+    accepted: ["evangelization by attraction", "attraction"],
+    displayAnswer: "Evangelization by Attraction",
+    note: "Evangelization by Attraction: Showing Christ-like love and joyful unity within communities."
+  },
+  {
+    type: "mcq",
+    category: "New Evangelization",
+    q: "The New Evangelization aims to prompt a three-fold change (Metanoia). Which of the following correctly lists these three?",
+    options: [
+      "Change of location, change of career, change of income.",
+      "Change of doctrine, change of leadership, change of rules.",
+      "Change of mind, change of heart, change of behavior.",
+      "Change of language, change of dress, change of diet."
+    ],
+    answer: 2,
+    note: "Prompting a three-fold change: mind, heart, and behavior."
+  },
+  {
+    type: "ident",
+    category: "New Evangelization",
+    q: "What is the Tagalog word for 'Change of mind' in the context of metanoia?",
+    accepted: ["pananaw"],
+    displayAnswer: "Pananaw",
+    note: "Change of mind (pananaw)."
+  },
+  {
+    type: "ident",
+    category: "New Evangelization",
+    q: "What is the Tagalog word for 'Change of heart' in the context of metanoia?",
+    accepted: ["kalooban"],
+    displayAnswer: "Kalooban",
+    note: "Change of heart (kalooban)."
+  },
+  {
+    type: "ident",
+    category: "New Evangelization",
+    q: "What is the Tagalog word for 'Change of behavior' in the context of metanoia?",
+    accepted: ["pagkilos"],
+    displayAnswer: "Pagkilos",
+    note: "Change of behavior (pagkilos)."
+  },
+  {
+    type: "mcq",
+    category: "Translating Faith into Action",
+    q: "The process of translating faith into action begins with immersion and awareness of social issues and leads directly to:",
+    options: [
+      "Organized human development projects.",
+      "Withdrawing from society completely.",
+      "Only praying without any physical involvement.",
+      "Criticizing the government without offering solutions."
+    ],
+    answer: 0,
+    note: "From Curiosity to Advocacy: The process begins with immersion... leading to organized human development projects."
+  },
+  {
+    type: "ident",
+    category: "Concrete Advocacy",
+    q: "What Dominican human rights advocacy process brings academic institutions together to defend human rights?",
+    accepted: ["salamanca process", "salamanca"],
+    displayAnswer: "The Salamanca Process",
+    note: "The Salamanca Process brings academic Dominican institutions together to defend human rights."
+  },
+  {
+    type: "mcq",
+    category: "Concrete Advocacy",
+    q: "What are the main objectives of the Salamanca Process?",
+    options: [
+      "To build more universities worldwide.",
+      "To recover historical Dominican human rights involvement, evaluate current engagement, and establish collaboration networks.",
+      "To centralize all funding for Dominican schools into one global bank account.",
+      "To shift focus entirely away from human rights toward pure theological philosophy."
+    ],
+    answer: 1,
+    note: "Objectives: Recover historical involvement, evaluate current ground-level engagement, and establish collaboration networks."
+  },
+  {
+    type: "ident",
+    category: "Concrete Advocacy",
+    q: "What is the acronym for the University of Santo Tomas community organizing, training, and project management experience mentioned in the text?",
+    accepted: ["tomas", "tomas experience", "ust-ocd-simbahayanan", "simbahayanan"],
+    displayAnswer: "TOMAS Experience (UST-OCD-Simbahayanan)",
+    note: "UST-OCD-Simbahayanan (TOMAS Experience) implements systematic community organizing."
+  },
+  {
+    type: "mcq",
+    category: "Concrete Advocacy",
+    q: "During his 2024 visit, Pope Francis commended which nation's economic progress but urged its leaders not to forget the poor, elderly, and migrant workers?",
+    options: ["Philippines", "Japan", "Singapore", "Australia"],
+    answer: 2,
+    note: "Global Solidarity (The Case of Singapore): During his 2024 visit to Singapore, Pope Francis commended the nation's progress..."
+  }
+];
+
+let activeFilter = "ALL", filteredQuestions = [], currentIndex = 0, userAnswers = {};
+
+// Fisher-Yates Shuffle Algorithm
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+function init() { 
+  buildCategoryFilters(); 
+  filterQuestionSet(); 
+  
+  document.getElementById("ident-input").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      if(document.getElementById("check-btn").style.display !== "none") {
+        checkIdentAnswer();
+      } else {
+        nextQuestion();
+      }
+    }
+  });
+}
+
+function buildCategoryFilters() {
+  const container = document.getElementById("category-filters");
+  container.innerHTML = "";
+  const categories = ["ALL", ...new Set(questions.map(q => q.category))];
+  categories.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = `filter-btn ${cat === activeFilter ? "active" : ""}`;
+    btn.textContent = cat === "ALL" ? `All Topics (${questions.length})` : cat;
+    btn.onclick = () => { activeFilter = cat; filterQuestionSet(); buildCategoryFilters(); };
+    container.appendChild(btn);
+  });
+}
+
+function filterQuestionSet() {
+  let pool = activeFilter !== "ALL" ? questions.filter(q => q.category === activeFilter) : [...questions];
+  filteredQuestions = shuffleArray(pool); // Shuffle applied here
+  currentIndex = 0; userAnswers = {}; initGrid(); renderQuestion();
+}
+
+function initGrid() {
+  const grid = document.getElementById("grid-jump");
+  grid.innerHTML = "";
+  filteredQuestions.forEach((_, idx) => {
+    const btn = document.createElement("button");
+    btn.className = "grid-btn"; btn.textContent = idx + 1;
+    btn.onclick = () => jumpToQuestion(idx);
+    grid.appendChild(btn);
+  });
+}
+
+function updateGridStyles() {
+  const btns = document.querySelectorAll(".grid-btn");
+  btns.forEach((btn, idx) => {
+    btn.className = "grid-btn";
+    if (idx === currentIndex) btn.classList.add("current");
+    if (userAnswers[idx] !== undefined) {
+      if (userAnswers[idx].isCorrect) btn.classList.add("answered-correct");
+      else btn.classList.add("answered-wrong");
+    }
+  });
+}
+
+function renderQuestion() {
+  const item = filteredQuestions[currentIndex];
+  document.getElementById("cat-badge").textContent = item.category;
+  document.getElementById("type-badge").textContent = item.type === "mcq" ? "Multiple Choice" : "Identification";
+  document.getElementById("question-text").textContent = item.q;
+  document.getElementById("question-indicator").textContent = `Question ${currentIndex + 1} of ${filteredQuestions.length}`;
+  
+  const optionsBox = document.getElementById("options-box");
+  const identBox = document.getElementById("ident-box");
+  const identInput = document.getElementById("ident-input");
+  const checkBtn = document.getElementById("check-btn");
+  const nextBtn = document.getElementById("next-btn");
+  const expBox = document.getElementById("explanation-box");
+  
+  expBox.className = "explanation-panel"; 
+  expBox.innerHTML = "";
+  const hasAnswered = userAnswers[currentIndex] !== undefined;
+
+  if (item.type === "mcq") {
+    optionsBox.style.display = "flex";
+    identBox.style.display = "none";
+    optionsBox.innerHTML = "";
+    
+    item.options.forEach((opt, idx) => {
+      const div = document.createElement("div");
+      div.className = "option-item";
+      if (hasAnswered) div.classList.add("disabled");
+      
+      div.innerHTML = `<span class="option-key">${String.fromCharCode(65 + idx)}.</span><span>${opt}</span>`;
+      
+      if (hasAnswered) {
+        if (idx === item.answer) div.classList.add("correct");
+        if (userAnswers[currentIndex].choice === idx && idx !== item.answer) div.classList.add("wrong");
+      } else {
+        div.onclick = () => selectMcqAnswer(idx, opt);
+      }
+      optionsBox.appendChild(div);
+    });
+
+    if (hasAnswered) {
+      nextBtn.style.display = "block";
+      showExplanation(userAnswers[currentIndex].isCorrect, item.options[item.answer], item.note, false);
+    } else {
+      nextBtn.style.display = "none";
+    }
+
+  } else {
+    optionsBox.style.display = "none";
+    identBox.style.display = "flex";
+
+    if (hasAnswered) {
+      identInput.value = userAnswers[currentIndex].text;
+      identInput.disabled = true;
+      checkBtn.style.display = "none";
+      nextBtn.style.display = "block";
+      showExplanation(userAnswers[currentIndex].isCorrect, item.displayAnswer, item.note, true);
+    } else {
+      identInput.value = "";
+      identInput.disabled = false;
+      checkBtn.style.display = "block";
+      nextBtn.style.display = "none";
+      identInput.focus();
+    }
+  }
+
+  document.getElementById("prev-btn").disabled = currentIndex === 0;
+  nextBtn.textContent = (currentIndex === filteredQuestions.length - 1) ? "Finish & Review" : "Next →";
+  
+  const answeredKeys = Object.keys(userAnswers);
+  const corrCount = answeredKeys.filter(k => userAnswers[k].isCorrect).length;
+  document.getElementById("score-indicator").textContent = `Score: ${corrCount} / ${answeredKeys.length}`;
+  document.getElementById("progress-bar").style.width = `${((currentIndex + 1) / filteredQuestions.length) * 100}%`;
+  
+  updateGridStyles();
+}
+
+function selectMcqAnswer(selectedIdx, optText) {
+  if (userAnswers[currentIndex] !== undefined) return;
+  const item = filteredQuestions[currentIndex];
+  userAnswers[currentIndex] = {
+    type: "mcq",
+    choice: selectedIdx,
+    text: optText,
+    isCorrect: (selectedIdx === item.answer)
+  };
+  renderQuestion();
+}
+
+function checkIdentAnswer() {
+  const inputEl = document.getElementById("ident-input");
+  const userText = inputEl.value.trim().toLowerCase();
+  if(userText === "") return; 
+  
+  const item = filteredQuestions[currentIndex];
+  let isCorrect = item.accepted.some(ans => userText.includes(ans.toLowerCase()));
+  
+  userAnswers[currentIndex] = {
+    type: "ident",
+    text: inputEl.value,
+    isCorrect: isCorrect
+  };
+  renderQuestion();
+}
+
+function showExplanation(isCorrect, displayAnswer, note, allowOverride) {
+  const expBox = document.getElementById("explanation-box");
+  expBox.classList.add("show", isCorrect ? "correct" : "wrong");
+  
+  let html = `<strong>${isCorrect ? "✓ Correct!" : "✗ Incorrect."}</strong><br/>`;
+  if(!isCorrect) html += `<strong>Correct Answer:</strong> ${displayAnswer}<br/><br/>`;
+  html += `<small>${note}</small>`;
+  
+  if (!isCorrect && allowOverride) {
+    html += `<br/><button class="override-btn" onclick="overrideGrade()">I got this right (Override)</button>`;
+  }
+  expBox.innerHTML = html;
+}
+
+function overrideGrade() {
+  if(userAnswers[currentIndex]) {
+    userAnswers[currentIndex].isCorrect = true;
+    renderQuestion();
+  }
+}
+
+function jumpToQuestion(idx) { currentIndex = idx; renderQuestion(); }
+function prevQuestion() { if (currentIndex > 0) { currentIndex--; renderQuestion(); } }
+
+function nextQuestion() {
+  if (currentIndex < filteredQuestions.length - 1) { 
+    currentIndex++; 
+    renderQuestion(); 
+  } else {
+    document.getElementById("quiz-card").style.display = "none";
+    document.getElementById("summary-card").style.display = "block";
+    
+    const total = filteredQuestions.length;
+    const answeredKeys = Object.keys(userAnswers);
+    const corr = answeredKeys.filter(k => userAnswers[k].isCorrect).length;
+    const pct = Math.round((corr / total) * 100) || 0;
+    
+    document.getElementById("final-score-display").textContent = `${pct}% (${corr}/${total})`;
+    document.getElementById("final-remark").textContent = pct >= 80 ? "Superb mastery of Chapter 4!" : "Review your notes and try again.";
+    
+    const reviewBox = document.getElementById("review-container");
+    reviewBox.innerHTML = "";
+    filteredQuestions.forEach((item, idx) => {
+      const uAns = userAnswers[idx];
+      const isCorr = uAns ? uAns.isCorrect : false;
+      const d = document.createElement("div");
+      d.className = `review-item ${isCorr ? "pass" : "fail"}`;
+      
+      const correctStr = item.type === "mcq" ? item.options[item.answer] : item.displayAnswer;
+      
+      d.innerHTML = `
+        <strong>Q${idx + 1}: ${item.q}</strong><br/>
+        <span style="color:${isCorr ? "var(--correct-text)" : "var(--wrong-text)"}">
+          Your Answer: ${uAns ? uAns.text : "Unanswered"}
+        </span><br/>
+        ${!isCorr ? `Correct Answer: <strong>${correctStr}</strong><br/>` : ''}
+        <small style="color:var(--text-muted);">${item.note}</small>
+      `;
+      reviewBox.appendChild(d);
+    });
+  }
+}
+
+function resetQuiz() {
+  userAnswers = {}; currentIndex = 0;
+  document.getElementById("summary-card").style.display = "none";
+  document.getElementById("quiz-card").style.display = "block";
+  renderQuestion();
+}
+
+function toggleTheme() {
+  const cur = document.body.getAttribute("data-theme");
+  document.body.setAttribute("data-theme", cur === "light" ? "dark" : "light");
+}
+
+window.onload = init;
+</script>
+</body>
+</html>
