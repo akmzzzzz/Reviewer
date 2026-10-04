@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 2: Human Dignity</title>
+  <style>
+    :root {
+      --bg: #0d1117; --card-bg: #161b22; --border: #30363d; --text: #c9d1d9;
+      --text-heading: #f0f6fc; --text-muted: #8b949e; --accent: #58a6ff;
+      --accent-hover: #1f6feb; --accent-glow: rgba(88, 166, 255, 0.12);
+      --correct-bg: rgba(46, 160, 67, 0.15); --correct-border: #2ea043; --correct-text: #3fb950;
+      --wrong-bg: rgba(248, 81, 73, 0.15); --wrong-border: #f85149; --wrong-text: #ff7b72; --radius: 8px;
+    }
+    [data-theme="light"] {
+      --bg: #f6f8fa; --card-bg: #ffffff; --border: #d0d7de; --text: #24292f;
+      --text-heading: #0969da; --text-muted: #57606a; --accent: #0969da;
+      --accent-hover: #084298; --accent-glow: rgba(9, 105, 218, 0.08);
+      --correct-bg: #dafbe1; --correct-border: #1a7f37; --correct-text: #1a7f37;
+      --wrong-bg: #ffebe9; --wrong-border: #cf222e; --wrong-text: #cf222e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg); color: var(--text); line-height: 1.6;
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 1.5rem 1rem;
+    }
+    .container { width: 100%; max-width: 860px; }
+    header {
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: center; }
+    h1 { font-size: 1.35rem; color: var(--text-heading); font-weight: 600; }
+    .nav-actions { display: flex; gap: 0.5rem; }
+    .btn-action-sm {
+      background: transparent; border: 1px solid var(--border); color: var(--text);
+      padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; text-decoration: none; transition: all 0.2s;
+    }
+    .btn-action-sm:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem; }
+    .filter-btn {
+      background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+      padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s;
+    }
+    .filter-btn.active, .filter-btn:hover { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+    .progress-track { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.3s ease; }
+    .meta-status { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); }
+    .grid-jump {
+      display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 1.25rem; padding: 0.75rem;
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); max-height: 135px; overflow-y: auto;
+    }
+    .grid-btn {
+      width: 28px; height: 28px; border-radius: 4px; border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .grid-btn.current { border-color: var(--accent); color: var(--accent); font-weight: bold; }
+    .grid-btn.answered-correct { background: var(--correct-bg); border-color: var(--correct-border); color: var(--correct-text); }
+    .grid-btn.answered-wrong { background: var(--wrong-bg); border-color: var(--wrong-border); color: var(--wrong-text); }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; margin-bottom: 1.25rem; }
+    .category-badge { display: inline-block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 0.75rem; font-weight: 600; }
+    .question-title { font-size: 1.15rem; color: var(--text-heading); margin-bottom: 1.25rem; font-weight: 500; }
+    .options-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+    .option-item {
+      display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.9rem 1rem;
+      background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 0.95rem; color: var(--text);
+    }
+    .option-item:hover:not(.disabled) { border-color: var(--accent); background: var(--accent-glow); }
+    .option-item.correct { background: var(--correct-bg) !important; border-color: var(--correct-border) !important; color: var(--correct-text) !important; }
+    .option-item.wrong { background: var(--wrong-bg) !important; border-color: var(--wrong-border) !important; color: var(--wrong-text) !important; }
+    .option-key { font-weight: 600; color: var(--text-muted); min-width: 1.25rem; }
+    .explanation-panel { margin-top: 1.25rem; padding: 1rem; border-radius: 6px; font-size: 0.9rem; display: none; line-height: 1.5; }
+    .explanation-panel.show { display: block; }
+    .explanation-panel.correct { background: var(--correct-bg); border: 1px solid var(--correct-border); color: var(--correct-text); }
+    .explanation-panel.wrong { background: var(--wrong-bg); border: 1px solid var(--wrong-border); color: var(--wrong-text); }
+    .nav-controls { display: flex; justify-content: space-between; margin-top: 1.5rem; }
+    .btn {
+      background: var(--accent); color: #ffffff; border: none; padding: 0.65rem 1.3rem;
+      border-radius: 6px; font-size: 0.9rem; font-weight: 500; cursor: pointer;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .summary-card { display: none; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; text-align: center; }
+    .summary-score { font-size: 3rem; font-weight: 700; color: var(--accent); margin: 1rem 0; }
+    .review-list { margin-top: 2rem; text-align: left; display: flex; flex-direction: column; gap: 1rem; }
+    .review-item { padding: 1rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; }
+    .review-item.pass { border-left: 4px solid var(--correct-border); }
+    .review-item.fail { border-left: 4px solid var(--wrong-border); }
+  </style>
+</head>
+<body data-theme="dark">
+<div class="container">
+  <header>
+    <div class="header-top">
+      <h1>Lesson 2: Human Dignity in Sacred Scriptures</h1>
+      <div class="nav-actions">
+        <a href="theology.html" class="btn-action-sm">← Lesson Index</a>
+        <button class="btn-action-sm" onclick="toggleTheme()">Theme</button>
+      </div>
+    </div>
+    <div class="filter-bar" id="category-filters"></div>
+    <div class="progress-track"><div class="progress-fill" id="progress-bar"></div></div>
+    <div class="meta-status">
+      <span id="question-indicator">Question 1 of --</span>
+      <span id="score-indicator">Score: 0 / 0</span>
+    </div>
+  </header>
+
+  <div class="grid-jump" id="grid-jump"></div>
+
+  <div class="card" id="quiz-card">
+    <span class="category-badge" id="cat-badge">Category</span>
+    <h2 class="question-title" id="question-text">Question Prompt</h2>
+    <div class="options-grid" id="options-box"></div>
+    <div class="explanation-panel" id="explanation-box"></div>
+    <div class="nav-controls">
+      <button class="btn btn-secondary" id="prev-btn" onclick="prevQuestion()" disabled>&larr; Previous</button>
+      <button class="btn" id="next-btn" onclick="nextQuestion()">Next &rarr;</button>
+    </div>
+  </div>
+
+  <div class="summary-card" id="summary-card">
+    <h2>Lesson 2 Completed</h2>
+    <div class="summary-score" id="final-score-display">0%</div>
+    <p id="final-remark" style="color: var(--text-muted);"></p>
+    <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; justify-content: center;">
+      <a href="theology.html" class="btn btn-secondary" style="text-decoration:none; display:inline-block;">Return to Index</a>
+      <button class="btn" onclick="resetQuiz()">Retake Quiz</button>
+    </div>
+    <div class="review-list" id="review-container"></div>
+  </div>
+</div>
+
+<script>
+const questions = [
+  {
+    category: "Philosophical Perspectives",
+    q: "According to Sociology, the human person is fundamentally understood as:",
+    options: ["A solitary predator", "A social animal", "A purely spiritual entity", "A mechanical automaton"],
+    answer: 1,
+    note: "Sociology defines the human person essentially as a social animal, living in interdependent relationships."
+  },
+  {
+    category: "Philosophical Perspectives",
+    q: "In Anatomy, the physical human person is characterized as consisting of which cranial lobes?",
+    options: [
+      "Frontal, parietal, occipital, and temporal lobes",
+      "Cerebellar, medulla, and spinal lobes",
+      "Cerebral and axial cortex only",
+      "Optic and auditory vesicles"
+    ],
+    answer: 0,
+    note: "Anatomically, the human brain structure consists of the frontal, parietal, occipital, and temporal lobes."
+  },
+  {
+    category: "Philosophical Perspectives",
+    q: "Which Stoic philosopher stated: 'We are members of one great body, planted by nature... we must consider that we were born for the good of the whole'?",
+    options: ["Marcus Aurelius", "Lucius Seneca", "Epictetus", "Cicero"],
+    answer: 1,
+    note: "Lucius Seneca asserted our social solidarity: we were born to contribute for the betterment of society as one great body."
+  },
+  {
+    category: "Philosophical Perspectives",
+    q: "Who coined the phrase 'Homo homini lupus est' (Man is a wolf to man), noting that without laws, morals, and virtues, man has the capacity for brutality?",
+    options: ["Titus Plautus", "Thomas Hobbes", "Niccolo Machiavelli", "Julius Caesar"],
+    answer: 0,
+    note: "Titus Plautus coined 'Homo homini lupus est'—highlighting man's capacity for good and evil, becoming a wolf in the absence of moral laws."
+  },
+  {
+    category: "Philosophical Perspectives",
+    q: "St. Thomas Aquinas defined human persons as having a rational nature specifically by virtue of which two faculties?",
+    options: [
+      "Instinct and Locomotion",
+      "Intellect and Free Will",
+      "Memory and Physical Strength",
+      "Sensory Perception and Emotion"
+    ],
+    answer: 1,
+    note: "Aquinas defined the human person as an individual substance of a rational nature, endowed with intellect and free will."
+  },
+  {
+    category: "Philosophical Perspectives",
+    q: "Which Renaissance political thinker described men as 'fickle, ungrateful, deceivers, avoiders of danger, and greedy for gain'?",
+    options: ["Thomas Hobbes", "Niccolo Machiavelli", "Desiderius Erasmus", "Thomas More"],
+    answer: 1,
+    note: "Niccolo Machiavelli portrayed fallen human nature pessimistically in The Prince as fickle, ungrateful, and greedy."
+  },
+  {
+    category: "Philosophical Perspectives",
+    q: "Rene Descartes formulated the foundational philosophical dictum 'Cogito ergo sum', meaning:",
+    options: [
+      "I act, therefore I am moral",
+      "I think, therefore I am",
+      "I believe, therefore I understand",
+      "I suffer, therefore I exist"
+    ],
+    answer: 1,
+    note: "'Cogito ergo sum' translates to 'I think, therefore I am', establishing existence upon rational consciousness."
+  },
+  {
+    category: "Philosophical Perspectives",
+    q: "What did Descartes imply about beings that do not possess rational thought?",
+    options: [
+      "They are automatically elevated to angels",
+      "From an epistemic stance of rational consciousness, 'those who do not think, are those who do not exist' in conscious self-reflection",
+      "They possess supernatural intuition",
+      "They have higher moral accountability than humans"
+    ],
+    answer: 1,
+    note: "Descartes' rationalism grounded certainty of existence in the conscious exercise of thought."
+  },
+  {
+    category: "Philosophical Perspectives",
+    q: "Who famously wrote that the natural state of man is 'solitary, poor, nasty, brutish, and short', necessitating government?",
+    options: ["Thomas Hobbes", "John Locke", "Jean-Jacques Rousseau", "Albert Camus"],
+    answer: 0,
+    note: "Thomas Hobbes in Leviathan described man's condition in the state of nature as solitary, poor, nasty, brutish, and short."
+  },
+  {
+    category: "Philosophical Perspectives",
+    q: "Which existentialist thinker observed that 'Man is the only creature who refuses to be what he is'?",
+    options: ["Jean-Paul Sartre", "Albert Camus", "Friedrich Nietzsche", "Soren Kierkegaard"],
+    answer: 1,
+    note: "Albert Camus noted man's defiance and struggle against his inherent limits: 'Man is the only creature who refuses to be what he is.'"
+  },
+  {
+    category: "Crowning Glory & Soul",
+    q: "Why is being created in the 'image and likeness of God' described as both a 'gift and a task'?",
+    options: [
+      "Because the image is destroyed at death",
+      "Because the image is our intrinsic nature (gift), while the likeness diminishes whenever we sin and must be cultivated through virtue (task)",
+      "Because we must physically reconstruct the Garden of Eden",
+      "Because angels can revoke it at any time"
+    ],
+    answer: 1,
+    note: "Image is our inalienable intrinsic nature (gift), whereas likeness is moral alignment with God, which diminishes through sin (task)."
+  },
+  {
+    category: "Crowning Glory & Soul",
+    q: "What are the 'Two Superpowers' of human beings mentioned in Christian anthropology?",
+    options: [
+      "Instinct and Emotion",
+      "Intellect (making us rational beings) and Free Will (making us moral beings)",
+      "Immortality and Bilocation",
+      "Physical Agility and Sensation"
+    ],
+    answer: 1,
+    note: "Intellect makes us rational beings, and Free Will makes us moral beings."
+  },
+  {
+    category: "Crowning Glory & Soul",
+    q: "St. Thomas Aquinas described humans as 'embodied spirits' through the philosophical framework of Hylemorphism, meaning:",
+    options: [
+      "The body is an evil prison for the spirit",
+      "We are a substantial union of body (matter/hyle) and soul (form/morphe), separated only by death",
+      "The soul is an illusion produced by brain chemistry",
+      "Man transforms into an angel after death"
+    ],
+    answer: 1,
+    note: "Hylemorphism holds that humans are substantial unities of matter (body) and substantial form (soul); only death separates them."
+  },
+  {
+    category: "Crowning Glory & Soul",
+    q: "How is the soul formally defined in classical Thomistic philosophy?",
+    options: [
+      "A spark of light trapped in the heart",
+      "Primus actus corporis physici organici (the first act of a physical organic body; the principle of life)",
+      "A ghost operating physical brain lobes",
+      "The psychological memory of personal experiences"
+    ],
+    answer: 1,
+    note: "The soul is 'primus actus corporis physici organici'—the first act of a physical organic body, making living beings 'besoulled'."
+  },
+  {
+    category: "Crowning Glory & Soul",
+    q: "In classical philosophy, which beings are considered 'besoulled beings'?",
+    options: [
+      "Only humans and angels",
+      "Any being that manifests life and performs vital operations",
+      "Only beings that possess free will",
+      "Only minerals with crystalline symmetry"
+    ],
+    answer: 1,
+    note: "Any being that manifests life performs vital operations through an animating principle (soul) and is therefore besoulled."
+  },
+  {
+    category: "Crowning Glory & Soul",
+    q: "In the Aristotelian-Thomistic Hierarchy of Being (Scala Naturae), how does the human soul differ from animal and plant souls upon death?",
+    options: [
+      "Human souls perish immediately with the body",
+      "Human souls are rational and immortal (living on after death), whereas animal and vegetative souls die with the organism",
+      "Plant souls reincarnate into animals",
+      "All souls are immortal without distinction"
+    ],
+    answer: 1,
+    note: "Humans possess a rational/immortal soul that endures past death, unlike sentient (animal) and vegetative (plant) souls."
+  },
+  {
+    category: "Crowning Glory & Soul",
+    q: "What vital operations are characteristic of a 'Vegetative Soul' (found in plants)?",
+    options: [
+      "Sensation and Locomotion",
+      "Growth, Nutrition, and Reproduction",
+      "Intellection and Volition",
+      "Visceral dreaming and moral choices"
+    ],
+    answer: 1,
+    note: "The vegetative soul governs basic vital biological functions: nutrition, growth, and reproduction."
+  },
+  {
+    category: "Crowning Glory & Soul",
+    q: "Which operations are characteristic of a 'Sentient Soul' (found in animals)?",
+    options: [
+      "Only nutrition and intellection",
+      "Growth, Nutrition, Reproduction, Sensation, and Locomotion",
+      "Volition and abstract mathematics",
+      "Immortality and sanctifying grace"
+    ],
+    answer: 1,
+    note: "Animals possess sentient souls, adding sensation (internal/external) and locomotion to vegetative powers."
+  },
+  {
+    category: "Crowning Glory & Soul",
+    q: "Which of the following lists operations unique to humans on the earthly Scala Naturae (not shared with animals or plants)?",
+    options: [
+      "Nutrition and Growth",
+      "Reproduction and Locomotion",
+      "Intellection and Volition (Free Will)",
+      "External Sensation and Visceral Instinct"
+    ],
+    answer: 2,
+    note: "Intellection (abstract thought) and Volition (Free Will) are exclusive to rational beings (humans)."
+  },
+  {
+    category: "Crowning Glory & Soul",
+    q: "What are the internal senses of human sensation as distinguished from external senses (sight, hearing, etc.)?",
+    options: [
+      "Telepathy and clairvoyance",
+      "Visceral sensations, dreaming, instincts, and emotions",
+      "Metaphysics and syllogism",
+      "Concupiscence and infused knowledge"
+    ],
+    answer: 1,
+    note: "Internal senses include visceral sensations, dreaming, instincts, and emotions."
+  },
+  {
+    category: "Crowning Glory & Soul",
+    q: "Why are humans considered the 'crowning glory' of God's creation rather than angels, who possess greater natural spiritual power?",
+    options: [
+      "Because humans built churches and temples on earth",
+      "Because of the Incarnation of Jesus Christ: God became human, thereby elevating human nature above the angels",
+      "Because humans outnumber angels",
+      "Because angels were never given free will"
+    ],
+    answer: 1,
+    note: "Through the Incarnation, God became Man in Jesus Christ, elevating human nature and dignity above all created beings."
+  },
+  {
+    category: "Crowning Glory & Soul",
+    q: "What was Lucifer's fundamental mistake according to theological tradition?",
+    options: [
+      "Refusing to participate in the physical creation of earth",
+      "Looking down upon Jesus and humans in pride, believing angels were naturally higher and refusing to bow to God incarnate",
+      "Wanting to be an animal instead of a spirit",
+      "Creating the Tree of Knowledge"
+    ],
+    answer: 1,
+    note: "Lucifer's pride led him to look down upon human nature and reject God's plan to elevate humanity in Jesus Christ."
+  },
+  {
+    category: "Dignity & Stewardship",
+    q: "How does 'Intrinsic Dignity' differ from 'Extrinsic Dignity' in theological anthropology?",
+    options: [
+      "Intrinsic is earned through education; Extrinsic is given at baptism",
+      "Intrinsic is rooted in being created in God's image and likeness (inalienable); Extrinsic is based on outward status, power, and authority",
+      "Intrinsic applies only to priests; Extrinsic applies to citizens",
+      "There is no difference in Christian theology"
+    ],
+    answer: 1,
+    note: "Intrinsic dignity is inborn, permanent, and rooted in God's image; extrinsic dignity is temporary and tied to social status or authority."
+  },
+  {
+    category: "Dignity & Stewardship",
+    q: "What does human stewardship over God's creation entail?",
+    options: [
+      "Unrestricted exploitation of all natural resources",
+      "Caring for, preserving, and cultivating the world as responsible representatives of the Creator",
+      "Worshiping nature as divine",
+      "Leaving nature entirely untouched without agriculture or architecture"
+    ],
+    answer: 1,
+    note: "Stewardship is caring for and cultivating the world in loving responsibility to God."
+  },
+  {
+    category: "Dignity & Stewardship",
+    q: "In Genesis 1, what repetitive phrase evaluates creation on Days 1 through 5?",
+    options: [
+      "'And God saw that it was flawed'",
+      "'And God saw that it was good'",
+      "'And God commanded the angels to rule'",
+      "'And the earth remained silent'"
+    ],
+    answer: 1,
+    note: "At each stage of creation (Days 1 to 5), Scripture affirms: 'and God saw that it was good'."
+  },
+  {
+    category: "Dignity & Stewardship",
+    q: "In Genesis 2:18-23, why did God declare 'It is not good for man to be alone', leading to the creation of woman?",
+    options: [
+      "Adam was physically incapable of gardening",
+      "The animals were not suitable partners; man required an equal companion capable of mutual relational communion ('bone of my bones')",
+      "God had forgotten to create other beings",
+      "Adam asked to be turned into an angel"
+    ],
+    answer: 1,
+    note: "Animals could not be equal relational partners for Adam. Eve was created as an equal companion in dignity ('bone of my bones, flesh of my flesh')."
+  },
+  {
+    category: "Dignity & Stewardship",
+    q: "What was Adam's exclamation upon meeting Eve in Genesis 2:23?",
+    options: [
+      "'Behold, an angel from the heavens'",
+      "'This one, at last, is bone of my bones and flesh of my flesh; this one shall be called woman'",
+      "'Rule over the animals with me'",
+      "'Let us hide from the Creator'"
+    ],
+    answer: 1,
+    note: "Adam recognized their shared nature: 'This one, at last, is bone of my bones and flesh of my flesh...'"
+  },
+  {
+    category: "The Fall & Redemption",
+    q: "In the State of Original Justice before the Fall, which three Preternatural Gifts did God bestow on Adam and Eve?",
+    options: [
+      "Wealth, Political Power, and Invisibility",
+      "Infused Knowledge, Impassibility (absence of concupiscence), and Immortality",
+      "Omnipotence, Omniscience, and Omnipresence",
+      "Angelic Wings, Transfiguration, and Prophecy"
+    ],
+    answer: 1,
+    note: "The three preternatural gifts were Infused Knowledge, Impassibility (freedom from concupiscence/suffering), and Immortality."
+  },
+  {
+    category: "The Fall & Redemption",
+    q: "How did St. Thomas Aquinas define concupiscence resulting from the loss of preternatural gifts?",
+    options: [
+      "A total annihilation of the human mind",
+      "A disorder in our natural appetites, inclining humanity toward the capital sins",
+      "An infection of physical blood cells",
+      "A temporary lack of biological nutrition"
+    ],
+    answer: 1,
+    note: "Aquinas defined concupiscence as a disorder in the natural appetites where passions rebel against right reason."
+  },
+  {
+    category: "The Fall & Redemption",
+    q: "How is Original Sin defined in Christian theology?",
+    options: [
+      "A personal crime committed in a previous reincarnated life",
+      "Being born into the fallen, sinful condition of the world, separated from Original Justice",
+      "The biological inability to read scripture",
+      "A myth with no real effects on human freedom"
+    ],
+    answer: 1,
+    note: "Original Sin is the inherited state of fallenness and deprivation of original holiness into which all humans are born."
+  },
+  {
+    category: "The Fall & Redemption",
+    q: "What sacrament initially washes away the guilt of Original Sin, initiating the human person into grace?",
+    options: ["Holy Orders", "Baptism", "Matrimony", "Anointing of the Sick"],
+    answer: 1,
+    note: "Baptism washes away original sin, infusing sanctifying grace, although concupiscence remains as an inclination to struggle against."
+  },
+  {
+    category: "The Fall & Redemption",
+    q: "When will the lost preternatural gifts (such as full impassibility and bodily immortality) be completely restored to redeemed humanity?",
+    options: [
+      "During early childhood",
+      "Only in Heaven / at the Parousia (the Second Coming)",
+      "When secular political governments unite",
+      "Immediately upon entering college"
+    ],
+    answer: 1,
+    note: "Full restoration of immortality and impassibility occurs only eschatologically in the resurrection of the just at the Parousia."
+  },
+  {
+    category: "The Fall & Redemption",
+    q: "What is the meaning and significance of the 'Protoevangelium' in Genesis 3:15 ('I will put enmity between you and the woman...')?",
+    options: [
+      "A curse destroying humanity forever without hope",
+      "The 'First Gospel'—the initial biblical promise of salvation where the offspring of the woman (Christ) will crush the serpent's head",
+      "The institution of the Old Testament dietary laws",
+      "A historical chronicle of the building of the Ark"
+    ],
+    answer: 1,
+    note: "Protoevangelium (First Gospel) is God's first promise of redemption, fulfilled when Jesus (seed of the woman) conquers Satan."
+  },
+  {
+    category: "The Fall & Redemption",
+    q: "Why is the Blessed Virgin Mary understood as having a unique role in the Protoevangelium?",
+    options: [
+      "She was conceived without original sin (Immaculate Conception) to be the woman at total enmity with Satan",
+      "She wrote the book of Genesis",
+      "She led an army against the Roman Empire",
+      "She replaced the Apostles as high priest"
+    ],
+    answer: 0,
+    note: "Mary, conceived without original sin, is the woman whose offspring (Jesus) defeats the power of the serpent."
+  },
+  {
+    category: "Typology",
+    q: "In biblical hermeneutics, what is 'Typology'?",
+    options: [
+      "The study of printing fonts in ancient Bibles",
+      "A method of interpretation where an Old Testament element (type) prefigures a New Testament fulfillment (antitype)",
+      "Categorizing sins into venial and mortal",
+      "Classifying angels into nine choirs"
+    ],
+    answer: 1,
+    note: "Typology recognizes Old Testament figures and events (types) as prefiguring New Testament realities (antitypes)."
+  },
+  {
+    category: "Typology",
+    q: "In biblical typology, what is the New Testament 'antitype' to the Old Testament 'Tree of Knowledge of Good and Evil'?",
+    options: [
+      "The Jordan River",
+      "The Cross of Christ (Tree of Life)",
+      "The Temple of Jerusalem",
+      "The Ark of the Covenant"
+    ],
+    answer: 1,
+    note: "The Tree of Knowledge (instrument of sin and death) is fulfilled by the Cross of Christ (Tree of Life and salvation)."
+  },
+  {
+    category: "Typology",
+    q: "What are the New Testament antitypical gardens corresponding to the Old Testament Garden of Eden?",
+    options: [
+      "Babylon and Nineveh",
+      "Gethsemane (prayer and obedience) and Golgotha (redemption)",
+      "Rome and Athens",
+      "Alexandria and Antioch"
+    ],
+    answer: 1,
+    note: "Where Adam fell in the Garden of Eden, Christ offered obedience in the Garden of Gethsemane and conquered death at Golgotha."
+  },
+  {
+    category: "Typology",
+    q: "Which angelic messenger stands as the antitype in the New Testament to the fallen angel (Satan) in the Garden of Eden?",
+    options: ["Michael", "Archangel Gabriel (at the Annunciation)", "Raphael", "Uriel"],
+    answer: 1,
+    note: "Satan brought words of deception to Eve; Gabriel brought words of divine truth and salvation to Mary."
+  },
+  {
+    category: "Typology",
+    q: "Why is the Blessed Virgin Mary typologically designated as the 'New Eve'?",
+    options: [
+      "Because she lived in the Garden of Eden",
+      "Because her obedience and 'fiat' at the Annunciation untied the knot of disobedience caused by the first Eve",
+      "Because she was older than Sarah and Rachel",
+      "Because she wrote the Protoevangelium"
+    ],
+    answer: 1,
+    note: "Eve brought disobedience and death through deception; Mary (the New Eve) brought obedience and life by consenting to bear Christ."
+  },
+  {
+    category: "Typology",
+    q: "Why is Jesus Christ typologically designated as the 'New Adam'?",
+    options: [
+      "He was made of clay from the earth",
+      "Where the first Adam brought sin, division, and death through disobedience, Jesus brought life, grace, and reconciliation through obedience",
+      "He had no ancestors",
+      "He was the first king of Israel"
+    ],
+    answer: 1,
+    note: "St. Paul and Christian theology designate Christ as the New Adam, reversing Adam's fall through perfect obedience to the Father."
+  },
+  {
+    category: "Salvation History",
+    q: "How did the event of the Tower of Babel transform the fallen human condition in Salvation History?",
+    options: [
+      "It reconciled all human languages into Latin",
+      "From 'brothers against brothers' (Cain and Abel), it led to prideful rebellion, language confusion, diaspora, and 'nations against nations'",
+      "It established the first Church council",
+      "It resulted in the worldwide flood of Noah"
+    ],
+    answer: 1,
+    note: "Babel represents human pride resulting in language division, dispersion (diaspora), and strife between nations."
+  },
+  {
+    category: "Salvation History",
+    q: "Why is Abraham called the 'Father of All Nations' in salvation history?",
+    options: [
+      "He conquered the Roman Empire",
+      "Through Sarah (Isaac & the Israelites), Hagar (Ishmael & the Islamic/Arab nations), and Keturah (eastern peoples), God made him father of many peoples",
+      "He was the first man created by God",
+      "He translated the scriptures into Greek"
+    ],
+    answer: 1,
+    note: "God promised Abraham he would father many nations—realized historically through Isaac, Ishmael, and his sons with Keturah."
+  },
+  {
+    category: "Salvation History",
+    q: "Theological Recapitulation means Jesus fulfills and sums up all Old Testament figures. Which pair correctly reflects this fulfillment?",
+    options: [
+      "New Moses because Jesus gave new architectural blueprints for temples",
+      "New Moses because Moses gave the 10 Commandments, whereas Jesus IS the living Law; New Elijah because Jesus is the subject of all prophecy",
+      "New Noah because Jesus built a wooden boat in Galilee",
+      "New David because Jesus commanded a military battalion against Rome"
+    ],
+    answer: 1,
+    note: "Jesus is the New Moses (He is the divine Law itself), New Elijah (subject of all prophecy), New Abraham (gathers all nations), and New Adam."
+  }
+];
+
+let activeFilter = "ALL", filteredQuestions = [], currentIndex = 0, userAnswers = {};
+
+function init() { buildCategoryFilters(); filterQuestionSet(); }
+function buildCategoryFilters() {
+  const container = document.getElementById("category-filters");
+  container.innerHTML = "";
+  const categories = ["ALL", ...new Set(questions.map(q => q.category))];
+  categories.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = `filter-btn ${cat === activeFilter ? "active" : ""}`;
+    btn.textContent = cat === "ALL" ? `All Topics (${questions.length})` : cat;
+    btn.onclick = () => { activeFilter = cat; filterQuestionSet(); buildCategoryFilters(); };
+    container.appendChild(btn);
+  });
+}
+function filterQuestionSet() {
+  filteredQuestions = activeFilter !== "ALL" ? questions.filter(q => q.category === activeFilter) : [...questions];
+  currentIndex = 0; userAnswers = {}; initGrid(); renderQuestion();
+}
+function initGrid() {
+  const grid = document.getElementById("grid-jump");
+  grid.innerHTML = "";
+  filteredQuestions.forEach((_, idx) => {
+    const btn = document.createElement("button");
+    btn.className = "grid-btn"; btn.textContent = idx + 1;
+    btn.onclick = () => jumpToQuestion(idx);
+    grid.appendChild(btn);
+  });
+}
+function updateGridStyles() {
+  const btns = document.querySelectorAll(".grid-btn");
+  btns.forEach((btn, idx) => {
+    btn.className = "grid-btn";
+    if (idx === currentIndex) btn.classList.add("current");
+    if (userAnswers[idx] !== undefined) {
+      if (userAnswers[idx] === filteredQuestions[idx].answer) btn.classList.add("answered-correct");
+      else btn.classList.add("answered-wrong");
+    }
+  });
+}
+function renderQuestion() {
+  const item = filteredQuestions[currentIndex];
+  document.getElementById("cat-badge").textContent = item.category;
+  document.getElementById("question-text").textContent = item.q;
+  document.getElementById("question-indicator").textContent = `Question ${currentIndex + 1} of ${filteredQuestions.length}`;
+  
+  const optionsBox = document.getElementById("options-box");
+  optionsBox.innerHTML = "";
+  const expBox = document.getElementById("explanation-box");
+  expBox.className = "explanation-panel"; expBox.innerHTML = "";
+
+  const hasAnswered = userAnswers[currentIndex] !== undefined;
+  item.options.forEach((opt, idx) => {
+    const div = document.createElement("div");
+    div.className = "option-item";
+    if (hasAnswered) div.classList.add("disabled");
+    div.innerHTML = `<span class="option-key">${String.fromCharCode(65 + idx)}.</span><span>${opt}</span>`;
+    if (hasAnswered) {
+      if (idx === item.answer) div.classList.add("correct");
+      if (userAnswers[currentIndex] === idx && idx !== item.answer) div.classList.add("wrong");
+    } else {
+      div.onclick = () => { if (userAnswers[currentIndex] === undefined) { userAnswers[currentIndex] = idx; renderQuestion(); } };
+    }
+    optionsBox.appendChild(div);
+  });
+
+  if (hasAnswered) {
+    const isCorr = userAnswers[currentIndex] === item.answer;
+    expBox.classList.add("show", isCorr ? "correct" : "wrong");
+    expBox.innerHTML = `<strong>${isCorr ? "✓ Correct!" : "✗ Incorrect."}</strong> ${item.note}`;
+  }
+
+  document.getElementById("prev-btn").disabled = currentIndex === 0;
+  document.getElementById("next-btn").textContent = (currentIndex === filteredQuestions.length - 1) ? "Finish & Review" : "Next →";
+  
+  const corrCount = Object.keys(userAnswers).filter(k => userAnswers[k] === filteredQuestions[k].answer).length;
+  document.getElementById("score-indicator").textContent = `Score: ${corrCount} / ${Object.keys(userAnswers).length}`;
+  document.getElementById("progress-bar").style.width = `${((currentIndex + 1) / filteredQuestions.length) * 100}%`;
+  updateGridStyles();
+}
+function jumpToQuestion(idx) { currentIndex = idx; renderQuestion(); }
+function prevQuestion() { if (currentIndex > 0) { currentIndex--; renderQuestion(); } }
+function nextQuestion() {
+  if (currentIndex < filteredQuestions.length - 1) { currentIndex++; renderQuestion(); }
+  else {
+    document.getElementById("quiz-card").style.display = "none";
+    document.getElementById("summary-card").style.display = "block";
+    const total = filteredQuestions.length;
+    const corr = Object.keys(userAnswers).filter(k => userAnswers[k] === filteredQuestions[k].answer).length;
+    const pct = Math.round((corr / total) * 100) || 0;
+    document.getElementById("final-score-display").textContent = `${pct}% (${corr}/${total})`;
+    document.getElementById("final-remark").textContent = pct >= 80 ? "Superb mastery!" : "Review the lesson notes and try again.";
+    
+    const reviewBox = document.getElementById("review-container");
+    reviewBox.innerHTML = "";
+    filteredQuestions.forEach((item, idx) => {
+      const uChoice = userAnswers[idx];
+      const isCorr = uChoice === item.answer;
+      const d = document.createElement("div");
+      d.className = `review-item ${isCorr ? "pass" : "fail"}`;
+      d.innerHTML = `<strong>Q${idx + 1}: ${item.q}</strong><br/><span style="color:${isCorr?"var(--correct-text)":"var(--wrong-text)"}">Your Answer: ${uChoice !== undefined ? item.options[uChoice] : "Unanswered"}</span><br/>${!isCorr?`Correct: <strong>${item.options[item.answer]}</strong><br/>`:''}<small style="color:var(--text-muted);">${item.note}</small>`;
+      reviewBox.appendChild(d);
+    });
+  }
+}
+function resetQuiz() {
+  userAnswers = {}; currentIndex = 0;
+  document.getElementById("summary-card").style.display = "none";
+  document.getElementById("quiz-card").style.display = "block";
+  renderQuestion();
+}
+function toggleTheme() {
+  const cur = document.body.getAttribute("data-theme");
+  document.body.setAttribute("data-theme", cur === "light" ? "dark" : "light");
+}
+window.onload = init;
+</script>
+</body>
+</html>

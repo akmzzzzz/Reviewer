@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter 1: Animal Body Plans</title>
+  <style>
+    :root {
+      --bg: #0d1117; --card-bg: #161b22; --border: #30363d; --text: #c9d1d9;
+      --text-heading: #f0f6fc; --text-muted: #8b949e; --accent: #58a6ff;
+      --accent-hover: #1f6feb; --accent-glow: rgba(88, 166, 255, 0.12);
+      --correct-bg: rgba(46, 160, 67, 0.15); --correct-border: #2ea043; --correct-text: #3fb950;
+      --wrong-bg: rgba(248, 81, 73, 0.15); --wrong-border: #f85149; --wrong-text: #ff7b72; --radius: 8px;
+    }
+    [data-theme="light"] {
+      --bg: #f6f8fa; --card-bg: #ffffff; --border: #d0d7de; --text: #24292f;
+      --text-heading: #0969da; --text-muted: #57606a; --accent: #0969da;
+      --accent-hover: #084298; --accent-glow: rgba(9, 105, 218, 0.08);
+      --correct-bg: #dafbe1; --correct-border: #1a7f37; --correct-text: #1a7f37;
+      --wrong-bg: #ffebe9; --wrong-border: #cf222e; --wrong-text: #cf222e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg); color: var(--text); line-height: 1.6;
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 1.5rem 1rem;
+    }
+    .container { width: 100%; max-width: 860px; }
+    header {
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: center; }
+    h1 { font-size: 1.35rem; color: var(--text-heading); font-weight: 600; }
+    .nav-actions { display: flex; gap: 0.5rem; }
+    .btn-action-sm {
+      background: transparent; border: 1px solid var(--border); color: var(--text);
+      padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; text-decoration: none; transition: all 0.2s;
+    }
+    .btn-action-sm:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem; }
+    .filter-btn {
+      background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+      padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s;
+    }
+    .filter-btn.active, .filter-btn:hover { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+    .progress-track { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.3s ease; }
+    .meta-status { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); }
+    .grid-jump {
+      display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 1.25rem; padding: 0.75rem;
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); max-height: 135px; overflow-y: auto;
+    }
+    .grid-btn {
+      width: 28px; height: 28px; border-radius: 4px; border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .grid-btn.current { border-color: var(--accent); color: var(--accent); font-weight: bold; }
+    .grid-btn.answered-correct { background: var(--correct-bg); border-color: var(--correct-border); color: var(--correct-text); }
+    .grid-btn.answered-wrong { background: var(--wrong-bg); border-color: var(--wrong-border); color: var(--wrong-text); }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; margin-bottom: 1.25rem; }
+    .category-badge { display: inline-block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 0.75rem; font-weight: 600; }
+    .question-title { font-size: 1.15rem; color: var(--text-heading); margin-bottom: 1.25rem; font-weight: 500; }
+    .options-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+    .option-item {
+      display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.9rem 1rem;
+      background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 0.95rem; color: var(--text);
+    }
+    .option-item:hover:not(.disabled) { border-color: var(--accent); background: var(--accent-glow); }
+    .option-item.correct { background: var(--correct-bg) !important; border-color: var(--correct-border) !important; color: var(--correct-text) !important; }
+    .option-item.wrong { background: var(--wrong-bg) !important; border-color: var(--wrong-border) !important; color: var(--wrong-text) !important; }
+    .option-key { font-weight: 600; color: var(--text-muted); min-width: 1.25rem; }
+    .explanation-panel { margin-top: 1.25rem; padding: 1rem; border-radius: 6px; font-size: 0.9rem; display: none; line-height: 1.5; }
+    .explanation-panel.show { display: block; }
+    .explanation-panel.correct { background: var(--correct-bg); border: 1px solid var(--correct-border); color: var(--correct-text); }
+    .explanation-panel.wrong { background: var(--wrong-bg); border: 1px solid var(--wrong-border); color: var(--wrong-text); }
+    .nav-controls { display: flex; justify-content: space-between; margin-top: 1.5rem; }
+    .btn {
+      background: var(--accent); color: #ffffff; border: none; padding: 0.65rem 1.3rem;
+      border-radius: 6px; font-size: 0.9rem; font-weight: 500; cursor: pointer;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .summary-card { display: none; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; text-align: center; }
+    .summary-score { font-size: 3rem; font-weight: 700; color: var(--accent); margin: 1rem 0; }
+    .review-list { margin-top: 2rem; text-align: left; display: flex; flex-direction: column; gap: 1rem; }
+    .review-item { padding: 1rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; }
+    .review-item.pass { border-left: 4px solid var(--correct-border); }
+    .review-item.fail { border-left: 4px solid var(--wrong-border); }
+  </style>
+</head>
+<body data-theme="dark">
+<div class="container">
+  <header>
+    <div class="header-top">
+      <h1>Chapter 1: Animal Body Plans</h1>
+      <div class="nav-actions">
+        <a href="Zoology.html" class="btn-action-sm">← Portal Home</a>
+        <button class="btn-action-sm" onclick="toggleTheme()">Theme</button>
+      </div>
+    </div>
+    <div class="filter-bar" id="category-filters"></div>
+    <div class="progress-track"><div class="progress-fill" id="progress-bar"></div></div>
+    <div class="meta-status">
+      <span id="question-indicator">Question 1 of --</span>
+      <span id="score-indicator">Score: 0 / 0</span>
+    </div>
+  </header>
+
+  <div class="grid-jump" id="grid-jump"></div>
+
+  <div class="card" id="quiz-card">
+    <span class="category-badge" id="cat-badge">Category</span>
+    <h2 class="question-title" id="question-text">Question Prompt</h2>
+    <div class="options-grid" id="options-box"></div>
+    <div class="explanation-panel" id="explanation-box"></div>
+    <div class="nav-controls">
+      <button class="btn btn-secondary" id="prev-btn" onclick="prevQuestion()" disabled>&larr; Previous</button>
+      <button class="btn" id="next-btn" onclick="nextQuestion()">Next &rarr;</button>
+    </div>
+  </div>
+
+  <div class="summary-card" id="summary-card">
+    <h2>Chapter 1 Completed</h2>
+    <div class="summary-score" id="final-score-display">0%</div>
+    <p id="final-remark" style="color: var(--text-muted);"></p>
+    <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; justify-content: center;">
+      <a href="index.html" class="btn btn-secondary" style="text-decoration:none; display:inline-block;">Return Home</a>
+      <button class="btn" onclick="resetQuiz()">Retake Quiz</button>
+    </div>
+    <div class="review-list" id="review-container"></div>
+  </div>
+</div>
+
+<script>
+const questions = [
+  // --- GRADES OF ORGANIZATION ---
+  {
+    category: "Organization",
+    q: "What is the simplest level of organismal complexity, typically seen in unicellular organisms?",
+    options: ["Cellular", "Protoplasmic", "Tissue-Organ", "Cell-Tissue"],
+    answer: 1,
+    note: "Protoplasmic is the simplest level, seen in unicellular organisms[cite: 2]."
+  },
+  {
+    category: "Organization",
+    q: "Which grade of organization describes an aggregation of cells with some division of labor?",
+    options: ["Cellular", "Cell-Tissue", "Protoplasmic", "Organ-System"],
+    answer: 0,
+    note: "The cellular grade of organization consists of aggregations of cells with some division of labor[cite: 2]."
+  },
+  {
+    category: "Organization",
+    q: "At which grade of organization are cells organized into specialized groups performing specific functions?",
+    options: ["Tissue-Organ", "Organ-System", "Cell-Tissue", "Protoplasmic"],
+    answer: 2,
+    note: "The cell-tissue grade involves cells organized into tissues, performing specific functions[cite: 2]."
+  },
+  {
+    category: "Organization",
+    q: "When tissues combine to form more complex functioning structures, what grade of organization is this?",
+    options: ["Tissue-Organ", "Cellular", "Organ-System", "Protoplasmic"],
+    answer: 0,
+    note: "Tissue-organ organization occurs when tissues are combined to form organs with more complex functions[cite: 2]."
+  },
+  {
+    category: "Organization",
+    q: "What is the highest implied grade of organization where organs work together?",
+    options: ["Organ-System", "Tissue-Organ", "Cell-Tissue", "Protoplasmic"],
+    answer: 0,
+    note: "The Organ-System level involves organs working together in systems[cite: 2]."
+  },
+
+  // --- SYMMETRY & METAMERISM ---
+  {
+    category: "Body Symmetry",
+    q: "The concentration of sense organs and nervous control at the anterior end of the body is known as:",
+    options: ["Metamerism", "Cephalization", "Gastrulation", "Cleavage"],
+    answer: 1,
+    note: "Cephalization forms a head by concentrating sense organs at the anterior end of the body[cite: 2]."
+  },
+  {
+    category: "Metamerism",
+    q: "What is metamerism?",
+    options: ["The fusion of male and female gametes", "The serial repetition of body segments along the longitudinal axis", "The development of a true coelom", "The formation of three germ layers"],
+    answer: 1,
+    note: "Metamerism involves the serial repetition of body segments along the longitudinal axis[cite: 2]."
+  },
+  {
+    category: "Metamerism",
+    q: "In a segmented animal, what is another name for a single segment (or metamere)?",
+    options: ["Blastopore", "Zygote", "Somite", "Archenteron"],
+    answer: 2,
+    note: "Each segment is called a Metamere, which is also known as a Somite[cite: 2]."
+  },
+  {
+    category: "Metamerism",
+    q: "What is one major functional advantage of metamerism?",
+    options: ["It prevents cell division", "It restricts geographical range", "It enhances mobility and structural complexity", "It creates a solid body cavity"],
+    answer: 2,
+    note: "Metamerism enhances mobility and the complexity of structure and function[cite: 2]."
+  },
+
+  // --- EMBRYONIC LAYERS & BODY CAVITIES ---
+  {
+    category: "Embryonic Development",
+    q: "What is the correct developmental sequence starting from a fertilized egg?",
+    options: ["Gastrula → Blastula → Zygote", "Blastula → Zygote → Gastrula", "Zygote → Blastula → Gastrula", "Zygote → Gastrula → Blastula"],
+    answer: 2,
+    note: "The developmental sequence is Zygote → Blastula → Gastrula (through Gastrulation)[cite: 2]."
+  },
+  {
+    category: "Embryonic Development",
+    q: "During gastrulation, an opening forms which is known as the:",
+    options: ["Blastopore", "Somite", "Coelom", "Gastrocoel"],
+    answer: 0,
+    note: "The blastopore is the opening formed during gastrulation[cite: 2]."
+  },
+  {
+    category: "Embryonic Development",
+    q: "What is the gastrocoel (archenteron)?",
+    options: ["The outer protective layer of the embryo", "The primitive gut tube formed during gastrulation", "The true body cavity", "The nerve cord of protostomes"],
+    answer: 1,
+    note: "The Gastrocoel or Archenteron is the primitive gut tube formed during gastrulation[cite: 2]."
+  },
+  {
+    category: "Embryonic Development",
+    q: "Animals that form exactly two germ layers (ectoderm and endoderm) are called:",
+    options: ["Acoelomates", "Triploblastic", "Diploblastic", "Deuterostomes"],
+    answer: 2,
+    note: "Diploblastic animals form two germ layers (Ectoderm and Endoderm)[cite: 2]."
+  },
+  {
+    category: "Embryonic Development",
+    q: "Triploblastic animals possess a third germ layer. What is it called?",
+    options: ["Ectoderm", "Mesoderm", "Endoderm", "Epidermis"],
+    answer: 1,
+    note: "Triploblastic animals form three germ layers, adding the Mesoderm[cite: 2]."
+  },
+  {
+    category: "Body Cavities",
+    q: "An animal that lacks a body cavity, having the space between the ectoderm and endoderm filled with mesoderm, is a(n):",
+    options: ["Acoelomate", "Pseudocoelomate", "Coelomate", "Somite"],
+    answer: 0,
+    note: "An acoelomate lacks a body cavity; the space between the ectoderm and endoderm is filled with mesoderm[cite: 2]."
+  },
+  {
+    category: "Body Cavities",
+    q: "Which of the following organisms is given as an example of an acoelomate?",
+    options: ["Earthworm", "Nematode", "Flatworm", "Gastrotrich"],
+    answer: 2,
+    note: "The Flatworm body is an example of an acoelomate[cite: 2]."
+  },
+  {
+    category: "Body Cavities",
+    q: "In pseudocoelomates, the body cavity is derived from the:",
+    options: ["Archenteron", "Blastopore", "Blastocoel", "Zygote"],
+    answer: 2,
+    note: "The pseudocoelom is derived from the blastocoel[cite: 2]."
+  },
+  {
+    category: "Body Cavities",
+    q: "How does a pseudocoelom differ from a true coelom?",
+    options: ["It lacks mesoderm entirely", "It is lined by mesoderm on the outside but not around the gut tube", "It is found only in flatworms", "It develops into the mouth"],
+    answer: 1,
+    note: "A pseudocoelomate is lined by mesoderm on the outside but not around the gut tube[cite: 2]."
+  },
+  {
+    category: "Body Cavities",
+    q: "Which organism represents a true coelomate body plan?",
+    options: ["Flatworm", "Nematode", "Earthworm", "Gastrotrich"],
+    answer: 2,
+    note: "The Earthworm body is an example of a coelomate, having a body cavity completely lined by mesoderm[cite: 2]."
+  },
+
+  // --- PROTOSTOMES VS DEUTEROSTOMES ---
+  {
+    category: "Developmental Fates",
+    q: "In protostomes, the blastopore develops into the:",
+    options: ["Mouth", "Anus", "Brain", "Coelom"],
+    answer: 0,
+    note: "In protostomes, the blastopore develops into the mouth[cite: 2]."
+  },
+  {
+    category: "Developmental Fates",
+    q: "In deuterostomes, the blastopore develops into the:",
+    options: ["Mouth", "Gastrocoel", "Anus", "Ectoderm"],
+    answer: 2,
+    note: "In deuterostomes, the blastopore develops into the anus[cite: 2]."
+  },
+  {
+    category: "Developmental Fates",
+    q: "What term describes the early cell divisions in the zygote, which differ between protostomes and deuterostomes?",
+    options: ["Gastrulation", "Cephalization", "Cleavage", "Metamerism"],
+    answer: 2,
+    note: "Cleavage refers to early cell divisions in the zygote[cite: 2]."
+  },
+
+  // --- VERTEBRATE TISSUES ---
+  {
+    category: "Vertebrate Tissues",
+    q: "Which primary tissue type forms a sheet of cells covering internal or external surfaces?",
+    options: ["Connective Tissue", "Muscle Tissue", "Nervous Tissue", "Epithelial Tissue"],
+    answer: 3,
+    note: "Epithelial Tissue is a sheet of cells covering internal or external surfaces[cite: 2]."
+  },
+  {
+    category: "Vertebrate Tissues",
+    q: "Which type of stratified epithelium allows for great stretching in certain organs?",
+    options: ["Simple Epithelia", "Dense Connective Tissue", "Transitional Epithelial Tissue", "Cartilage"],
+    answer: 2,
+    note: "Transitional Epithelial Tissue is a type of stratified epithelium that allows great stretching[cite: 2]."
+  },
+  {
+    category: "Vertebrate Tissues",
+    q: "Which tissue type is widespread and characterized by relatively few cells, many fibers, and a suspending ground substance?",
+    options: ["Connective Tissue", "Nervous Tissue", "Epithelial Tissue", "Simple Epithelia"],
+    answer: 0,
+    note: "Connective Tissue is widespread, characterized by relatively few cells, many fibers, and a ground substance[cite: 2]."
+  },
+  {
+    category: "Vertebrate Tissues",
+    q: "Why does cartilage typically heal very slowly?",
+    options: ["It lacks osteocytes", "It has an overactive blood supply", "It relies entirely on constant stretching", "It lacks a blood supply and relies on diffusion"],
+    answer: 3,
+    note: "Cartilage lacks a blood supply, relying on diffusion for nutrients and waste removal, leading to very slow healing[cite: 2]."
+  },
+  {
+    category: "Vertebrate Tissues",
+    q: "What tiny channels allow blood vessels to flow through bone tissue, enabling continuous repair?",
+    options: ["Somites", "Blastopores", "Canaliculi", "Dendrites"],
+    answer: 2,
+    note: "Blood vessels flow through tiny channels called canaliculi in the bone matrix[cite: 2]."
+  },
+  {
+    category: "Vertebrate Tissues",
+    q: "In nervous tissue, what part of the neuron is primarily responsible for receiving signals?",
+    options: ["Axon", "Synapse", "Myelin sheath", "Dendrites"],
+    answer: 3,
+    note: "Dendrites receive signals in the functional units of the nervous system[cite: 2]."
+  },
+
+  // --- TAXONOMY ---
+  {
+    category: "Taxonomy",
+    q: "Who was the Greek biologist/philosopher that first classified organisms based on structural similarities?",
+    options: ["Carolus Linnaeus", "Aristotle", "Thomas Henry Huxley", "Charles Darwin"],
+    answer: 1,
+    note: "Aristotle (384–332 BC) first classified organisms based on structural similarities[cite: 2]."
+  },
+  {
+    category: "Taxonomy",
+    q: "Who designed the current system of classification published in Systema Naturae?",
+    options: ["Aristotle", "Thomas Henry Huxley", "Carolus Linnaeus", "Charles Darwin"],
+    answer: 2,
+    note: "Carolus Linnaeus designed the current system of classification, published in Systema Naturae[cite: 2]."
+  },
+  {
+    category: "Taxonomy",
+    q: "Which of the following lists the seven mandatory major taxonomic ranks in the correct descending order?",
+    options: [
+      "Kingdom, Phylum, Class, Order, Family, Genus, Species",
+      "Phylum, Kingdom, Order, Class, Genus, Family, Species",
+      "Kingdom, Class, Phylum, Family, Order, Genus, Species",
+      "Species, Genus, Family, Order, Class, Phylum, Kingdom"
+    ],
+    answer: 0,
+    note: "The mandatory major ranks are Kingdom, Phylum, Class, Order, Family, Genus, and Species[cite: 2]."
+  },
+  {
+    category: "Taxonomy",
+    q: "In binomial nomenclature, a species name consists of which two parts?",
+    options: ["Family and Genus", "Genus (Noun) and specific epithet (Adjective)", "Class and Order", "Kingdom and Phylum"],
+    answer: 1,
+    note: "Binomial nomenclature consists of the Genus name (Noun) and the specific epithet (Adjective)[cite: 2]."
+  }
+];
+
+let activeFilter = "ALL", filteredQuestions = [], currentIndex = 0, userAnswers = {};
+
+function init() { buildCategoryFilters(); filterQuestionSet(); }
+function buildCategoryFilters() {
+  const container = document.getElementById("category-filters");
+  container.innerHTML = "";
+  const categories = ["ALL", ...new Set(questions.map(q => q.category))];
+  categories.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = `filter-btn ${cat === activeFilter ? "active" : ""}`;
+    btn.textContent = cat === "ALL" ? `All Topics (${questions.length})` : cat;
+    btn.onclick = () => { activeFilter = cat; filterQuestionSet(); buildCategoryFilters(); };
+    container.appendChild(btn);
+  });
+}
+function filterQuestionSet() {
+  filteredQuestions = activeFilter !== "ALL" ? questions.filter(q => q.category === activeFilter) : [...questions];
+  currentIndex = 0; userAnswers = {}; initGrid(); renderQuestion();
+}
+function initGrid() {
+  const grid = document.getElementById("grid-jump");
+  grid.innerHTML = "";
+  filteredQuestions.forEach((_, idx) => {
+    const btn = document.createElement("button");
+    btn.className = "grid-btn"; btn.textContent = idx + 1;
+    btn.onclick = () => jumpToQuestion(idx);
+    grid.appendChild(btn);
+  });
+}
+function updateGridStyles() {
+  const btns = document.querySelectorAll(".grid-btn");
+  btns.forEach((btn, idx) => {
+    btn.className = "grid-btn";
+    if (idx === currentIndex) btn.classList.add("current");
+    if (userAnswers[idx] !== undefined) {
+      if (userAnswers[idx] === filteredQuestions[idx].answer) btn.classList.add("answered-correct");
+      else btn.classList.add("answered-wrong");
+    }
+  });
+}
+function renderQuestion() {
+  const item = filteredQuestions[currentIndex];
+  document.getElementById("cat-badge").textContent = item.category;
+  document.getElementById("question-text").textContent = item.q;
+  document.getElementById("question-indicator").textContent = `Question ${currentIndex + 1} of ${filteredQuestions.length}`;
+  
+  const optionsBox = document.getElementById("options-box");
+  optionsBox.innerHTML = "";
+  const expBox = document.getElementById("explanation-box");
+  expBox.className = "explanation-panel"; expBox.innerHTML = "";
+
+  const hasAnswered = userAnswers[currentIndex] !== undefined;
+  item.options.forEach((opt, idx) => {
+    const div = document.createElement("div");
+    div.className = "option-item";
+    if (hasAnswered) div.classList.add("disabled");
+    div.innerHTML = `<span class="option-key">${String.fromCharCode(65 + idx)}.</span><span>${opt}</span>`;
+    if (hasAnswered) {
+      if (idx === item.answer) div.classList.add("correct");
+      if (userAnswers[currentIndex] === idx && idx !== item.answer) div.classList.add("wrong");
+    } else {
+      div.onclick = () => { if (userAnswers[currentIndex] === undefined) { userAnswers[currentIndex] = idx; renderQuestion(); } };
+    }
+    optionsBox.appendChild(div);
+  });
+
+  if (hasAnswered) {
+    const isCorr = userAnswers[currentIndex] === item.answer;
+    expBox.classList.add("show", isCorr ? "correct" : "wrong");
+    expBox.innerHTML = `<strong>${isCorr ? "✓ Correct!" : "✗ Incorrect."}</strong> ${item.note}`;
+  }
+
+  document.getElementById("prev-btn").disabled = currentIndex === 0;
+  document.getElementById("next-btn").textContent = (currentIndex === filteredQuestions.length - 1) ? "Finish & Review" : "Next →";
+  
+  const corrCount = Object.keys(userAnswers).filter(k => userAnswers[k] === filteredQuestions[k].answer).length;
+  document.getElementById("score-indicator").textContent = `Score: ${corrCount} / ${Object.keys(userAnswers).length}`;
+  document.getElementById("progress-bar").style.width = `${((currentIndex + 1) / filteredQuestions.length) * 100}%`;
+  updateGridStyles();
+}
+function jumpToQuestion(idx) { currentIndex = idx; renderQuestion(); }
+function prevQuestion() { if (currentIndex > 0) { currentIndex--; renderQuestion(); } }
+function nextQuestion() {
+  if (currentIndex < filteredQuestions.length - 1) { currentIndex++; renderQuestion(); }
+  else {
+    document.getElementById("quiz-card").style.display = "none";
+    document.getElementById("summary-card").style.display = "block";
+    const total = filteredQuestions.length;
+    const corr = Object.keys(userAnswers).filter(k => userAnswers[k] === filteredQuestions[k].answer).length;
+    const pct = Math.round((corr / total) * 100) || 0;
+    document.getElementById("final-score-display").textContent = `${pct}% (${corr}/${total})`;
+    document.getElementById("final-remark").textContent = pct >= 80 ? "Great job mastering Chapter 1!" : "Review your notes and try again.";
+    
+    const reviewBox = document.getElementById("review-container");
+    reviewBox.innerHTML = "";
+    filteredQuestions.forEach((item, idx) => {
+      const uChoice = userAnswers[idx];
+      const isCorr = uChoice === item.answer;
+      const d = document.createElement("div");
+      d.className = `review-item ${isCorr ? "pass" : "fail"}`;
+      d.innerHTML = `<strong>Q${idx + 1}: ${item.q}</strong><br/><span style="color:${isCorr?"var(--correct-text)":"var(--wrong-text)"}">Your Answer: ${uChoice !== undefined ? item.options[uChoice] : "Unanswered"}</span><br/>${!isCorr?`Correct: <strong>${item.options[item.answer]}</strong><br/>`:''}<small style="color:var(--text-muted);">${item.note}</small>`;
+      reviewBox.appendChild(d);
+    });
+  }
+}
+function resetQuiz() {
+  userAnswers = {}; currentIndex = 0;
+  document.getElementById("summary-card").style.display = "none";
+  document.getElementById("quiz-card").style.display = "block";
+  renderQuestion();
+}
+function toggleTheme() {
+  const cur = document.body.getAttribute("data-theme");
+  document.body.setAttribute("data-theme", cur === "light" ? "dark" : "light");
+}
+window.onload = init;
+</script>
+</body>
+</html>

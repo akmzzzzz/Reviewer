@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter 3: Human Dignity as the Foundation of Human Rights</title>
+  <style>
+    :root {
+      --bg: #0d1117; --card-bg: #161b22; --border: #30363d; --text: #c9d1d9;
+      --text-heading: #f0f6fc; --text-muted: #8b949e; --accent: #58a6ff;
+      --accent-hover: #1f6feb; --accent-glow: rgba(88, 166, 255, 0.12);
+      --correct-bg: rgba(46, 160, 67, 0.15); --correct-border: #2ea043; --correct-text: #3fb950;
+      --wrong-bg: rgba(248, 81, 73, 0.15); --wrong-border: #f85149; --wrong-text: #ff7b72; --radius: 8px;
+    }
+    [data-theme="light"] {
+      --bg: #f6f8fa; --card-bg: #ffffff; --border: #d0d7de; --text: #24292f;
+      --text-heading: #0969da; --text-muted: #57606a; --accent: #0969da;
+      --accent-hover: #084298; --accent-glow: rgba(9, 105, 218, 0.08);
+      --correct-bg: #dafbe1; --correct-border: #1a7f37; --correct-text: #1a7f37;
+      --wrong-bg: #ffebe9; --wrong-border: #cf222e; --wrong-text: #cf222e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg); color: var(--text); line-height: 1.6;
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 1.5rem 1rem;
+    }
+    .container { width: 100%; max-width: 860px; }
+    header {
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: center; }
+    h1 { font-size: 1.35rem; color: var(--text-heading); font-weight: 600; }
+    .nav-actions { display: flex; gap: 0.5rem; }
+    .btn-action-sm {
+      background: transparent; border: 1px solid var(--border); color: var(--text);
+      padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; text-decoration: none; transition: all 0.2s;
+    }
+    .btn-action-sm:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem; }
+    .filter-btn {
+      background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+      padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s;
+    }
+    .filter-btn.active, .filter-btn:hover { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+    .progress-track { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.3s ease; }
+    .meta-status { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); }
+    
+    .grid-jump {
+      display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 1.25rem; padding: 0.75rem;
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); max-height: 135px; overflow-y: auto;
+    }
+    .grid-btn {
+      width: 28px; height: 28px; border-radius: 4px; border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .grid-btn.current { border-color: var(--accent); color: var(--accent); font-weight: bold; }
+    .grid-btn.answered-correct { background: var(--correct-bg); border-color: var(--correct-border); color: var(--correct-text); }
+    .grid-btn.answered-wrong { background: var(--wrong-bg); border-color: var(--wrong-border); color: var(--wrong-text); }
+    
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; margin-bottom: 1.25rem; }
+    .category-badge { display: inline-block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 0.75rem; font-weight: 600; }
+    .question-title { font-size: 1.15rem; color: var(--text-heading); margin-bottom: 1.25rem; font-weight: 500; }
+    
+    /* MCQ Specific Styles */
+    .options-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+    .option-item {
+      display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.9rem 1rem;
+      background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 0.95rem; color: var(--text);
+    }
+    .option-item:hover:not(.disabled) { border-color: var(--accent); background: var(--accent-glow); }
+    .option-item.correct { background: var(--correct-bg) !important; border-color: var(--correct-border) !important; color: var(--correct-text) !important; }
+    .option-item.wrong { background: var(--wrong-bg) !important; border-color: var(--wrong-border) !important; color: var(--wrong-text) !important; }
+    .option-key { font-weight: 600; color: var(--text-muted); min-width: 1.25rem; }
+
+    /* Identification Specific Styles */
+    .ident-container { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem; }
+    .ident-input {
+      width: 100%; padding: 1rem; font-size: 1rem; background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border); border-radius: 6px; color: var(--text); outline: none; transition: border-color 0.2s;
+    }
+    .ident-input:focus { border-color: var(--accent); }
+    .ident-input:disabled { opacity: 0.6; cursor: not-allowed; }
+    .type-badge { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px; background: var(--border); color: var(--text); float: right; margin-top: -0.2rem; }
+    
+    .explanation-panel { margin-top: 1.25rem; padding: 1rem; border-radius: 6px; font-size: 0.95rem; display: none; line-height: 1.6; }
+    .explanation-panel.show { display: block; }
+    .explanation-panel.correct { background: var(--correct-bg); border: 1px solid var(--correct-border); color: var(--correct-text); }
+    .explanation-panel.wrong { background: var(--wrong-bg); border: 1px solid var(--wrong-border); color: var(--wrong-text); }
+    
+    .override-btn {
+      background: transparent; border: 1px solid var(--correct-border); color: var(--correct-text);
+      padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer; margin-top: 0.75rem; display: inline-block;
+    }
+    .override-btn:hover { background: var(--correct-border); color: #fff; }
+
+    .nav-controls { display: flex; justify-content: space-between; margin-top: 1.5rem; align-items: center; }
+    .btn {
+      background: var(--accent); color: #ffffff; border: none; padding: 0.65rem 1.3rem;
+      border-radius: 6px; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: background 0.2s;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    
+    .summary-card { display: none; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; text-align: center; }
+    .summary-score { font-size: 3rem; font-weight: 700; color: var(--accent); margin: 1rem 0; }
+    .review-list { margin-top: 2rem; text-align: left; display: flex; flex-direction: column; gap: 1rem; }
+    .review-item { padding: 1rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; }
+    .review-item.pass { border-left: 4px solid var(--correct-border); }
+    .review-item.fail { border-left: 4px solid var(--wrong-border); }
+  </style>
+</head>
+<body data-theme="dark">
+<div class="container">
+  <header>
+    <div class="header-top">
+      <h1>Chapter 3: Human Dignity as Foundation of Rights</h1>
+      <div class="nav-actions">
+        <a href="theology.html" class="btn-action-sm">← Master Directory</a>
+        <button class="btn-action-sm" onclick="toggleTheme()">Theme</button>
+      </div>
+    </div>
+    <div class="filter-bar" id="category-filters"></div>
+    <div class="progress-track"><div class="progress-fill" id="progress-bar"></div></div>
+    <div class="meta-status">
+      <span id="question-indicator">Question 1 of --</span>
+      <span id="score-indicator">Score: 0 / 0</span>
+    </div>
+  </header>
+
+  <div class="grid-jump" id="grid-jump"></div>
+
+  <div class="card" id="quiz-card">
+    <div>
+      <span class="category-badge" id="cat-badge">Category</span>
+      <span class="type-badge" id="type-badge">Multiple Choice</span>
+    </div>
+    <h2 class="question-title" id="question-text">Question Prompt</h2>
+    
+    <!-- MCQ Container -->
+    <div class="options-grid" id="options-box" style="display: none;"></div>
+
+    <!-- Identification Container -->
+    <div class="ident-container" id="ident-box" style="display: none;">
+      <input type="text" id="ident-input" class="ident-input" placeholder="Type your answer here..." autocomplete="off" />
+      <button id="check-btn" class="btn" onclick="checkIdentAnswer()">Submit Answer</button>
+    </div>
+
+    <div class="explanation-panel" id="explanation-box"></div>
+    
+    <div class="nav-controls">
+      <button class="btn btn-secondary" id="prev-btn" onclick="prevQuestion()" disabled>&larr; Previous</button>
+      <button class="btn btn-secondary" id="next-btn" onclick="nextQuestion()" style="display: none;">Next &rarr;</button>
+    </div>
+  </div>
+
+  <div class="summary-card" id="summary-card">
+    <h2>Chapter 3 Completed</h2>
+    <div class="summary-score" id="final-score-display">0%</div>
+    <p id="final-remark" style="color: var(--text-muted);"></p>
+    <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; justify-content: center;">
+      <a href="../index.html" class="btn btn-secondary" style="text-decoration:none; display:inline-block;">Return Home</a>
+      <button class="btn" onclick="resetQuiz()">Retake Quiz</button>
+    </div>
+    <div class="review-list" id="review-container"></div>
+  </div>
+</div>
+
+<script>
+// Comprehensive Hybrid Data Structure for Chapter 3
+const questions = [
+  // SECTION 1: The Catholic Understanding of Human Dignity & Capacities
+  {
+    type: "ident",
+    category: "The Catholic Understanding",
+    q: "What Latin term refers to the concept that human beings possess inherent dignity because they are created in the image and likeness of God?",
+    accepted: ["imago dei", "imago"],
+    displayAnswer: "Imago Dei",
+    note: "Human beings possess inherent dignity because they are created in the image and likeness of God (imago Dei)."
+  },
+  {
+    type: "mcq",
+    category: "The Catholic Understanding",
+    q: "According to St. Thomas Aquinas (Summa Theologiae, I, q. 93), the nature of an image consists in this: that man ______ God.",
+    options: ["replaces", "imitates", "competes with", "ignores"],
+    answer: 1,
+    note: "'The nature of an image consists in this: that man imitates God.' — St. Thomas Aquinas"
+  },
+  {
+    type: "mcq",
+    category: "The Catholic Understanding",
+    q: "Which characteristic of human dignity means that human beings are born with it?",
+    options: ["Universal", "Inviolable", "Innate", "Inalienable"],
+    answer: 2,
+    note: "Innate: Human beings are born with dignity."
+  },
+  {
+    type: "ident",
+    category: "The Catholic Understanding",
+    q: "What characteristic of human dignity means that it cannot be taken away from any person?",
+    accepted: ["inalienable"],
+    displayAnswer: "Inalienable",
+    note: "Inalienable means it cannot be taken away from any person."
+  },
+  {
+    type: "ident",
+    category: "The Catholic Understanding",
+    q: "What characteristic of human dignity means that it cannot be violated or compromised?",
+    accepted: ["inviolable"],
+    displayAnswer: "Inviolable",
+    note: "Inviolable means it cannot be violated or compromised."
+  },
+  {
+    type: "mcq",
+    category: "The Incarnation",
+    q: "For St. Leo the Great, what divine event reveals the true measure of human dignity?",
+    options: ["The creation of the Garden of Eden", "The writing of the Ten Commandments", "The Incarnation of Christ", "The preaching of the Apostles"],
+    answer: 2,
+    note: "For St. Leo the Great, the Incarnation of Christ reveals the true measure of human dignity."
+  },
+  {
+    type: "ident",
+    category: "The Incarnation",
+    q: "What does St. Leo the Great's famous quote 'Agnosce, O Christiane, dignitatem tuam' translate to?",
+    accepted: ["christian recognize your dignity", "christian, recognize your dignity", "recognize your dignity"],
+    displayAnswer: "Christian, recognize your dignity.",
+    note: "Agnosce, O Christiane, dignitatem tuam means 'Christian, recognize your dignity.'"
+  },
+  {
+    type: "ident",
+    category: "Capacities of Human Dignity",
+    q: "Which of the three interconnected capacities of human dignity (intellectus) refers to the capacity to know truth?",
+    accepted: ["intellect", "intellectus"],
+    displayAnswer: "Intellect (intellectus)",
+    note: "Intellect (intellectus) is the capacity to know truth."
+  },
+  {
+    type: "ident",
+    category: "Capacities of Human Dignity",
+    q: "Which of the three interconnected capacities of human dignity (liberum arbitrium) refers to the capacity to choose the good?",
+    accepted: ["freedom", "free will", "liberum arbitrium"],
+    displayAnswer: "Freedom (liberum arbitrium)",
+    note: "Freedom (liberum arbitrium) is the capacity to choose the good."
+  },
+  {
+    type: "ident",
+    category: "Capacities of Human Dignity",
+    q: "Which of the three interconnected capacities of human dignity allows a person to act as a responsible moral agent?",
+    accepted: ["self-direction", "self direction", "per se potestativum"],
+    displayAnswer: "Self-direction (per se potestativum)",
+    note: "Self-direction (per se potestativum) is the capacity to act as a responsible moral agent."
+  },
+  {
+    type: "mcq",
+    category: "Dignity Independent of Status",
+    q: "According to Catholic teaching, the dignity of the human person is principally determined by:",
+    options: [
+      "What a person possesses and produces.",
+      "The social contributions a person makes.",
+      "What the human person IS (a rational creature made in the image of God).",
+      "The legal rights granted by the State."
+    ],
+    answer: 2,
+    note: "It arises from what the human person is: a rational creature made in the image of God, not what they possess or produce."
+  },
+
+  // SECTION 2: Historical Development
+  {
+    type: "ident",
+    category: "Historical Development",
+    q: "Which Dominican friar supplied the systematic theological-juridical framework for indigenous rights, stating that unbelief does not destroy natural rights?",
+    accepted: ["francisco de vitoria", "vitoria"],
+    displayAnswer: "Francisco de Vitoria",
+    note: "Francisco de Vitoria supplied the framework, stating that unbelief is not an impediment to natural rights and dominion."
+  },
+  {
+    type: "mcq",
+    category: "Historical Development",
+    q: "What was Francisco de Vitoria's central teaching regarding unbelief and property rights?",
+    options: [
+      "Unbelief legally forfeits all property to the Crown.",
+      "Unbelief is not an impediment to someone being a true owner.",
+      "Non-Christians must be baptized before owning property.",
+      "Indigenous peoples are legitimate objects of conquest regardless of belief."
+    ],
+    answer: 1,
+    note: "Infidelitas non est impedimentum: 'Unbelief is not an impediment to someone being a true owner'."
+  },
+  {
+    type: "ident",
+    category: "Historical Development",
+    q: "Which Dominican friar famously debated Juan Ginés de Sepúlveda in the Valladolid debate of 1550–1551?",
+    accepted: ["bartolome de las casas", "las casas", "bartolome las casas"],
+    displayAnswer: "Bartolomé de las Casas",
+    note: "Bartolomé de las Casas was famous for the Valladolid debate of 1550–1551, opposing Juan Ginés de Sepúlveda."
+  },
+  {
+    type: "ident",
+    category: "Historical Development",
+    q: "Who was Bartolomé de las Casas' opponent in the Valladolid debate of 1550–1551?",
+    accepted: ["juan gines de sepulveda", "sepulveda", "juan sepulveda"],
+    displayAnswer: "Juan Ginés de Sepúlveda",
+    note: "He opposed Juan Ginés de Sepúlveda in the famous Valladolid debate."
+  },
+  {
+    type: "mcq",
+    category: "Historical Development",
+    q: "What was Bartolomé de las Casas' central argument in his Apologética historia sumaria?",
+    options: [
+      "The indigenous peoples were biologically superior to Europeans.",
+      "Cultural difference and lack of civilization cannot justify conquest and enslavement, as all humans are rational.",
+      "The Spanish Crown had no legal authority to travel the seas.",
+      "Indigenous peoples should be forced to abandon their lands entirely."
+    ],
+    answer: 1,
+    note: "Las Casas countered that cultural difference or a supposed lack of civilization could not justify conquest, since all are rational and in God's image."
+  },
+  {
+    type: "ident",
+    category: "Historical Development",
+    q: "Which Dominican friar delivered a powerful Advent sermon in 1511 condemning the cruelty against indigenous peoples by asking, '¿Estos no son hombres?' (Are these not human beings?)",
+    accepted: ["antonio de montesinos", "montesinos", "antonio montesinos"],
+    displayAnswer: "Antonio de Montesinos",
+    note: "Antonio de Montesinos delivered the famous Advent sermon of 1511 condemning the abuse of indigenous peoples."
+  },
+  {
+    type: "ident",
+    category: "Historical Development",
+    q: "Who was the first Dominican Archbishop in the Philippines who extended Vitorian principles to defend the natives?",
+    accepted: ["domingo de salazar", "salazar", "domingo salazar"],
+    displayAnswer: "Domingo de Salazar",
+    note: "Domingo de Salazar extended Vitorian principles to the Philippine context."
+  },
+  {
+    type: "mcq",
+    category: "Historical Development",
+    q: "In 1588, Domingo de Salazar wrote a letter condemning the servitude of the Philippine natives. To which monarch was this letter addressed?",
+    options: ["King Ferdinand", "Queen Isabella", "King Philip II (Felipe II)", "King Charles V"],
+    answer: 2,
+    note: "He wrote the 'Carta a Felipe II' (King Philip II) in Manila, 27 June 1588."
+  },
+
+  // SECTION 3: Classical & Philosophical Foundations
+  {
+    type: "ident",
+    category: "Classical Foundations",
+    q: "Which Roman philosopher grounded moral conduct in what is proper to human rational nature and the capacity to order life according to what is honorable?",
+    accepted: ["cicero", "marcus tullius cicero"],
+    displayAnswer: "Cicero (Marcus Tullius Cicero)",
+    note: "Cicero grounded moral conduct in what is proper to human rational nature."
+  },
+  {
+    type: "mcq",
+    category: "Classical Foundations",
+    q: "The Latin word 'dignitas' comes from 'dignus', which originally means:",
+    options: ["Powerful", "Worthy or deserving", "Rational", "Sacred"],
+    answer: 1,
+    note: "Latin dignitas comes from dignus, meaning 'worthy' or 'deserving'."
+  },
+  {
+    type: "mcq",
+    category: "Classical Foundations",
+    q: "What did St. Leo the Great vigorously defend at the Council of Chalcedon regarding Christ?",
+    options: [
+      "That Christ was only a spiritual apparition.",
+      "That Christ is truly God and truly man.",
+      "That Christ was created after the angels.",
+      "That Christ replaced the Old Testament entirely."
+    ],
+    answer: 1,
+    note: "He defended at Chalcedon that Christ is truly God and truly man."
+  },
+
+  // SECTION 4: Rights Theory & Ius Gentium
+  {
+    type: "ident",
+    category: "Rights Theory in CST",
+    q: "What is defined as a moral claim that belongs to a person because of his or her inherent human dignity?",
+    accepted: ["right", "human right", "rights", "human rights"],
+    displayAnswer: "A Right (Human Right)",
+    note: "A right is a moral claim that belongs to a person because of his or her inherent human dignity."
+  },
+  {
+    type: "mcq",
+    category: "Rights Theory in CST",
+    q: "In Catholic Social Teaching, how are human rights correctly distinguished from human dignity?",
+    options: [
+      "Rights are given at birth; dignity must be earned through good works.",
+      "Dignity is a legal permission; rights are spiritual statuses.",
+      "Dignity is the value every person possesses; rights are the protections and claims arising from that value.",
+      "They are exactly the same concept with no distinction."
+    ],
+    answer: 2,
+    note: "Human dignity is the value every person possesses, while human rights are the protections and claims that arise from that value."
+  },
+  {
+    type: "mcq",
+    category: "Rights Theory in CST",
+    q: "How does Catholic Social Teaching view the relationship between rights and duties?",
+    options: [
+      "Rights exist independently and have no connection to duties.",
+      "Rights are inextricably bound up with corresponding duties, requiring solidarity.",
+      "Duties belong only to the State; citizens only have rights.",
+      "Duties supersede human rights in all cases."
+    ],
+    answer: 1,
+    note: "Rights generate corresponding duties; both must be exercised in solidarity for the common good (Pacem in Terris, 28)."
+  },
+  {
+    type: "ident",
+    category: "Rights Theory in CST",
+    q: "What 1963 landmark encyclical by Pope John XXIII systematically identified rights flowing from human dignity and marked the Church's acceptance of the UDHR?",
+    accepted: ["pacem in terris"],
+    displayAnswer: "Pacem in Terris",
+    note: "Pacem in Terris (1963) systematically presents a complete catalogue of human rights comparable to modern declarations."
+  },
+  {
+    type: "mcq",
+    category: "Rights Theory in CST",
+    q: "According to Pope Leo XIV's Magnifica Humanitas, human rights are:",
+    options: [
+      "An external addition to the person granted by the state.",
+      "An expression of intrinsic human dignity, not privileges granted by society.",
+      "Earned through civic obedience and participation.",
+      "Only applicable to baptized Christians."
+    ],
+    answer: 1,
+    note: "Human rights are not an external addition to the person, but an expression of intrinsic human dignity (Magnifica Humanitas, 54)."
+  },
+  {
+    type: "ident",
+    category: "Rights Theory in CST",
+    q: "According to Mater et Magistra, individual human beings are the foundation, cause, and end of every what?",
+    accepted: ["social institution", "social institutions"],
+    displayAnswer: "Social institution",
+    note: "Individual human beings are the foundation, the cause, and the end of every social institution (Mater et Magistra 218-220)."
+  },
+  {
+    type: "ident",
+    category: "Ius Gentium",
+    q: "What Latin term literally translates to the 'Law of Nations'?",
+    accepted: ["ius gentium", "jus gentium"],
+    displayAnswer: "Ius Gentium",
+    note: "Ius Gentium literally means 'law of nations'."
+  },
+  {
+    type: "mcq",
+    category: "Ius Gentium",
+    q: "What is the core principle of 'Ius Gentium' (Law of Nations) regarding international relations?",
+    options: [
+      "Economic dominance determines human value.",
+      "Might does not make right.",
+      "Unbelievers possess no property rights.",
+      "Only baptized citizens can establish laws."
+    ],
+    answer: 1,
+    note: "The core principle of Ius Gentium is that 'Might does not make right', regulating relations between peoples regardless of power."
+  },
+
+  // SECTION 5: Human Rights Violations
+  {
+    type: "ident",
+    category: "Human Rights Violations",
+    q: "Violating rights by actively doing something against another person (e.g., torturing) is known as a violation by what?",
+    accepted: ["commission", "active"],
+    displayAnswer: "Commission (Active Violations)",
+    note: "Violations by commission involve actively doing something against another person."
+  },
+  {
+    type: "ident",
+    category: "Human Rights Violations",
+    q: "Failing to protect or provide what human dignity reasonably requires (e.g., ignoring abuse) is known as a human rights violation by what?",
+    accepted: ["omission", "neglect", "passive"],
+    displayAnswer: "Omission (or Neglect)",
+    note: "Violations by omission or neglect involve failing to protect or provide what human dignity requires."
+  },
+  {
+    type: "mcq",
+    category: "Human Rights Violations",
+    q: "Taking a person's life outside the legitimate processes and protections of law is specifically called:",
+    options: ["Arbitrary detention", "Extrajudicial killing", "Forced displacement", "Religious persecution"],
+    answer: 1,
+    note: "Extrajudicial killing is taking a person's life outside the legitimate processes and protections of law."
+  },
+  {
+    type: "ident",
+    category: "Human Rights Violations",
+    q: "What specific active violation involves imprisoning people without proper legal grounds, due process, or a fair hearing?",
+    accepted: ["arbitrary arrest", "arbitrary detention", "false imprisonment"],
+    displayAnswer: "Arbitrary arrest and detention",
+    note: "Arbitrary arrest and detention is the act of imprisoning people without proper legal grounds or a fair hearing."
+  },
+  {
+    type: "mcq",
+    category: "Human Rights Violations",
+    q: "Which specific form of violation involves unjustly driving individuals or communities from their homes or ancestral lands?",
+    options: ["Human trafficking", "Forced displacement", "Discrimination", "Arbitrary detention"],
+    answer: 1,
+    note: "Forced displacement is unjustly driving individuals or communities from their homes or ancestral lands."
+  },
+
+  // SECTION 6: The Universal Declaration of Human Rights
+  {
+    type: "ident",
+    category: "The UDHR",
+    q: "What does the acronym UDHR stand for?",
+    accepted: ["universal declaration of human rights"],
+    displayAnswer: "Universal Declaration of Human Rights",
+    note: "UDHR stands for the Universal Declaration of Human Rights."
+  },
+  {
+    type: "mcq",
+    category: "The UDHR",
+    q: "Adopted on December 10, 1948, the Universal Declaration of Human Rights was established primarily in response to the horrors of which historical event?",
+    options: ["World War I", "The Spanish Civil War", "World War II", "The Cold War"],
+    answer: 2,
+    note: "The UN and UDHR were established in response to the horrors experienced during World War II, particularly from Nazi Germany and Imperial Japan."
+  },
+  {
+    type: "ident",
+    category: "The UDHR",
+    q: "On what exact date was the Universal Declaration of Human Rights adopted?",
+    accepted: ["december 10 1948", "10 december 1948", "dec 10 1948", "december 10, 1948"],
+    displayAnswer: "December 10, 1948",
+    note: "The UDHR was adopted on 10 December 1948."
+  },
+  {
+    type: "ident",
+    category: "The UDHR",
+    q: "How many articles setting out fundamental human rights and freedoms are contained in the UDHR?",
+    accepted: ["30", "thirty"],
+    displayAnswer: "30",
+    note: "It contains 30 articles setting out fundamental human rights and freedoms."
+  },
+  {
+    type: "mcq",
+    category: "The UDHR",
+    q: "Article 1 of the UDHR states that all human beings are born free and equal in:",
+    options: ["wealth and opportunity", "dignity and rights", "nationality and religion", "intellect and ability"],
+    answer: 1,
+    note: "All human beings are born free and equal in dignity and rights."
+  },
+  {
+    type: "ident",
+    category: "The UDHR",
+    q: "Which UDHR article states that no person may be treated as property, guaranteeing freedom from what?",
+    accepted: ["slavery"],
+    displayAnswer: "Slavery (Article 4)",
+    note: "Article 4: Freedom from slavery. No person may be enslaved or treated as property."
+  },
+  {
+    type: "mcq",
+    category: "The UDHR",
+    q: "Which dimension of human flourishing corresponds to Articles 22–27 of the UDHR (e.g., social security, work, education)?",
+    options: ["Dignity", "Freedom", "Participation", "Order and Responsibility"],
+    answer: 2,
+    note: "Articles 22–27 are concerned with social, economic, and cultural rights, representing the dimension of 'Participation'."
+  },
+
+  // SECTION 7: Philippine Constitutional Implementation
+  {
+    type: "ident",
+    category: "Philippine Constitutional Implementation",
+    q: "In the 1987 Philippine Constitution, which Article directs Congress to give highest priority to measures protecting and enhancing human dignity?",
+    accepted: ["article xiii", "article 13", "13", "xiii"],
+    displayAnswer: "Article XIII (Social Justice and Human Rights)",
+    note: "Article XIII: Social Justice and Human Rights directs Congress to give highest priority to these measures."
+  },
+  {
+    type: "ident",
+    category: "Philippine Constitutional Implementation",
+    q: "What independent office was created by the 1987 Philippine Constitution to investigate all forms of human rights violations involving civil and political rights?",
+    accepted: ["commission on human rights", "chr"],
+    displayAnswer: "Commission on Human Rights (CHR)",
+    note: "The Commission on Human Rights (CHR) is an independent office created to investigate civil and political rights violations."
+  },
+  {
+    type: "ident",
+    category: "Philippine Constitutional Implementation",
+    q: "The first Commission on Human Rights in the country was established two days before the start of what historical Philippine event?",
+    accepted: ["people power 1", "people power", "edsa", "edsa revolution", "edsa 1"],
+    displayAnswer: "People Power 1",
+    note: "The first CHR was established during Marcos time two days before the start of People Power 1."
+  },
+  {
+    type: "mcq",
+    category: "Philippine Constitutional Implementation",
+    q: "Which of the following is an explicit power of the Philippine Commission on Human Rights (CHR)?",
+    options: [
+      "To enact national criminal laws.",
+      "To exercise visitorial powers over jails, prisons, or detention facilities.",
+      "To declare war against foreign nations.",
+      "To appoint Supreme Court Justices."
+    ],
+    answer: 1,
+    note: "One of the CHR's powers is to exercise visitorial powers over jails, prisons, or detention facilities."
+  },
+
+  // SECTION 8: Theological Wrap-up
+  {
+    type: "mcq",
+    category: "Theological Understanding",
+    q: "Why is human life considered essentially social in the Catholic theological understanding?",
+    options: [
+      "Because individuals are incapable of independent thought.",
+      "Because human beings are created in the image of God who is a Trinity (unity and relationship).",
+      "Because society predates human existence.",
+      "Because governments grant the right to assemble."
+    ],
+    answer: 1,
+    note: "Human life is essentially social because human beings have been created in the image of God who is Trinity (combining unity and relationship)."
+  },
+  {
+    type: "ident",
+    category: "Theological Understanding",
+    q: "According to modern theological reasoning, human rights serve as a mechanism to control the exercise of what, so that it does not become dehumanizing?",
+    accepted: ["power", "authority"],
+    displayAnswer: "Power",
+    note: "Human rights is a mechanism to control the exercise of power so that it does not become dehumanizing of persons."
+  }
+];
+
+let activeFilter = "ALL", filteredQuestions = [], currentIndex = 0, userAnswers = {};
+
+function init() { 
+  buildCategoryFilters(); 
+  filterQuestionSet(); 
+  
+  document.getElementById("ident-input").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      if(document.getElementById("check-btn").style.display !== "none") {
+        checkIdentAnswer();
+      } else {
+        nextQuestion();
+      }
+    }
+  });
+}
+
+function buildCategoryFilters() {
+  const container = document.getElementById("category-filters");
+  container.innerHTML = "";
+  const categories = ["ALL", ...new Set(questions.map(q => q.category))];
+  categories.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = `filter-btn ${cat === activeFilter ? "active" : ""}`;
+    btn.textContent = cat === "ALL" ? `All Topics (${questions.length})` : cat;
+    btn.onclick = () => { activeFilter = cat; filterQuestionSet(); buildCategoryFilters(); };
+    container.appendChild(btn);
+  });
+}
+
+function filterQuestionSet() {
+  filteredQuestions = activeFilter !== "ALL" ? questions.filter(q => q.category === activeFilter) : [...questions];
+  currentIndex = 0; userAnswers = {}; initGrid(); renderQuestion();
+}
+
+function initGrid() {
+  const grid = document.getElementById("grid-jump");
+  grid.innerHTML = "";
+  filteredQuestions.forEach((_, idx) => {
+    const btn = document.createElement("button");
+    btn.className = "grid-btn"; btn.textContent = idx + 1;
+    btn.onclick = () => jumpToQuestion(idx);
+    grid.appendChild(btn);
+  });
+}
+
+function updateGridStyles() {
+  const btns = document.querySelectorAll(".grid-btn");
+  btns.forEach((btn, idx) => {
+    btn.className = "grid-btn";
+    if (idx === currentIndex) btn.classList.add("current");
+    if (userAnswers[idx] !== undefined) {
+      if (userAnswers[idx].isCorrect) btn.classList.add("answered-correct");
+      else btn.classList.add("answered-wrong");
+    }
+  });
+}
+
+function renderQuestion() {
+  const item = filteredQuestions[currentIndex];
+  document.getElementById("cat-badge").textContent = item.category;
+  document.getElementById("type-badge").textContent = item.type === "mcq" ? "Multiple Choice" : "Identification";
+  document.getElementById("question-text").textContent = item.q;
+  document.getElementById("question-indicator").textContent = `Question ${currentIndex + 1} of ${filteredQuestions.length}`;
+  
+  const optionsBox = document.getElementById("options-box");
+  const identBox = document.getElementById("ident-box");
+  const identInput = document.getElementById("ident-input");
+  const checkBtn = document.getElementById("check-btn");
+  const nextBtn = document.getElementById("next-btn");
+  const expBox = document.getElementById("explanation-box");
+  
+  expBox.className = "explanation-panel"; 
+  expBox.innerHTML = "";
+  const hasAnswered = userAnswers[currentIndex] !== undefined;
+
+  if (item.type === "mcq") {
+    optionsBox.style.display = "flex";
+    identBox.style.display = "none";
+    optionsBox.innerHTML = "";
+    
+    item.options.forEach((opt, idx) => {
+      const div = document.createElement("div");
+      div.className = "option-item";
+      if (hasAnswered) div.classList.add("disabled");
+      
+      div.innerHTML = `<span class="option-key">${String.fromCharCode(65 + idx)}.</span><span>${opt}</span>`;
+      
+      if (hasAnswered) {
+        if (idx === item.answer) div.classList.add("correct");
+        if (userAnswers[currentIndex].choice === idx && idx !== item.answer) div.classList.add("wrong");
+      } else {
+        div.onclick = () => selectMcqAnswer(idx, opt);
+      }
+      optionsBox.appendChild(div);
+    });
+
+    if (hasAnswered) {
+      nextBtn.style.display = "block";
+      showExplanation(userAnswers[currentIndex].isCorrect, item.options[item.answer], item.note, false);
+    } else {
+      nextBtn.style.display = "none";
+    }
+
+  } else {
+    optionsBox.style.display = "none";
+    identBox.style.display = "flex";
+
+    if (hasAnswered) {
+      identInput.value = userAnswers[currentIndex].text;
+      identInput.disabled = true;
+      checkBtn.style.display = "none";
+      nextBtn.style.display = "block";
+      showExplanation(userAnswers[currentIndex].isCorrect, item.displayAnswer, item.note, true);
+    } else {
+      identInput.value = "";
+      identInput.disabled = false;
+      checkBtn.style.display = "block";
+      nextBtn.style.display = "none";
+      identInput.focus();
+    }
+  }
+
+  document.getElementById("prev-btn").disabled = currentIndex === 0;
+  nextBtn.textContent = (currentIndex === filteredQuestions.length - 1) ? "Finish & Review" : "Next →";
+  
+  const answeredKeys = Object.keys(userAnswers);
+  const corrCount = answeredKeys.filter(k => userAnswers[k].isCorrect).length;
+  document.getElementById("score-indicator").textContent = `Score: ${corrCount} / ${answeredKeys.length}`;
+  document.getElementById("progress-bar").style.width = `${((currentIndex + 1) / filteredQuestions.length) * 100}%`;
+  
+  updateGridStyles();
+}
+
+function selectMcqAnswer(selectedIdx, optText) {
+  if (userAnswers[currentIndex] !== undefined) return;
+  const item = filteredQuestions[currentIndex];
+  userAnswers[currentIndex] = {
+    type: "mcq",
+    choice: selectedIdx,
+    text: optText,
+    isCorrect: (selectedIdx === item.answer)
+  };
+  renderQuestion();
+}
+
+function checkIdentAnswer() {
+  const inputEl = document.getElementById("ident-input");
+  const userText = inputEl.value.trim().toLowerCase();
+  if(userText === "") return; 
+  
+  const item = filteredQuestions[currentIndex];
+  let isCorrect = item.accepted.some(ans => userText.includes(ans.toLowerCase()));
+  
+  userAnswers[currentIndex] = {
+    type: "ident",
+    text: inputEl.value,
+    isCorrect: isCorrect
+  };
+  renderQuestion();
+}
+
+function showExplanation(isCorrect, displayAnswer, note, allowOverride) {
+  const expBox = document.getElementById("explanation-box");
+  expBox.classList.add("show", isCorrect ? "correct" : "wrong");
+  
+  let html = `<strong>${isCorrect ? "✓ Correct!" : "✗ Incorrect."}</strong><br/>`;
+  if(!isCorrect) html += `<strong>Correct Answer:</strong> ${displayAnswer}<br/><br/>`;
+  html += `<small>${note}</small>`;
+  
+  if (!isCorrect && allowOverride) {
+    html += `<br/><button class="override-btn" onclick="overrideGrade()">I got this right (Override)</button>`;
+  }
+  expBox.innerHTML = html;
+}
+
+function overrideGrade() {
+  if(userAnswers[currentIndex]) {
+    userAnswers[currentIndex].isCorrect = true;
+    renderQuestion();
+  }
+}
+
+function jumpToQuestion(idx) { currentIndex = idx; renderQuestion(); }
+function prevQuestion() { if (currentIndex > 0) { currentIndex--; renderQuestion(); } }
+
+function nextQuestion() {
+  if (currentIndex < filteredQuestions.length - 1) { 
+    currentIndex++; 
+    renderQuestion(); 
+  } else {
+    document.getElementById("quiz-card").style.display = "none";
+    document.getElementById("summary-card").style.display = "block";
+    
+    const total = filteredQuestions.length;
+    const answeredKeys = Object.keys(userAnswers);
+    const corr = answeredKeys.filter(k => userAnswers[k].isCorrect).length;
+    const pct = Math.round((corr / total) * 100) || 0;
+    
+    document.getElementById("final-score-display").textContent = `${pct}% (${corr}/${total})`;
+    document.getElementById("final-remark").textContent = pct >= 80 ? "Superb mastery of Chapter 3!" : "Review your notes and try again.";
+    
+    const reviewBox = document.getElementById("review-container");
+    reviewBox.innerHTML = "";
+    filteredQuestions.forEach((item, idx) => {
+      const uAns = userAnswers[idx];
+      const isCorr = uAns ? uAns.isCorrect : false;
+      const d = document.createElement("div");
+      d.className = `review-item ${isCorr ? "pass" : "fail"}`;
+      
+      const correctStr = item.type === "mcq" ? item.options[item.answer] : item.displayAnswer;
+      
+      d.innerHTML = `
+        <strong>Q${idx + 1}: ${item.q}</strong><br/>
+        <span style="color:${isCorr ? "var(--correct-text)" : "var(--wrong-text)"}">
+          Your Answer: ${uAns ? uAns.text : "Unanswered"}
+        </span><br/>
+        ${!isCorr ? `Correct Answer: <strong>${correctStr}</strong><br/>` : ''}
+        <small style="color:var(--text-muted);">${item.note}</small>
+      `;
+      reviewBox.appendChild(d);
+    });
+  }
+}
+
+function resetQuiz() {
+  userAnswers = {}; currentIndex = 0;
+  document.getElementById("summary-card").style.display = "none";
+  document.getElementById("quiz-card").style.display = "block";
+  renderQuestion();
+}
+
+function toggleTheme() {
+  const cur = document.body.getAttribute("data-theme");
+  document.body.setAttribute("data-theme", cur === "light" ? "dark" : "light");
+}
+
+window.onload = init;
+</script>
+</body>
+</html>

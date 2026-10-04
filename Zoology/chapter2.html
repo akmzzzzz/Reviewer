@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter 2: Unicellular Eukaryotes</title>
+  <style>
+    :root {
+      --bg: #0d1117; --card-bg: #161b22; --border: #30363d; --text: #c9d1d9;
+      --text-heading: #f0f6fc; --text-muted: #8b949e; --accent: #58a6ff;
+      --accent-hover: #1f6feb; --accent-glow: rgba(88, 166, 255, 0.12);
+      --correct-bg: rgba(46, 160, 67, 0.15); --correct-border: #2ea043; --correct-text: #3fb950;
+      --wrong-bg: rgba(248, 81, 73, 0.15); --wrong-border: #f85149; --wrong-text: #ff7b72; --radius: 8px;
+    }
+    [data-theme="light"] {
+      --bg: #f6f8fa; --card-bg: #ffffff; --border: #d0d7de; --text: #24292f;
+      --text-heading: #0969da; --text-muted: #57606a; --accent: #0969da;
+      --accent-hover: #084298; --accent-glow: rgba(9, 105, 218, 0.08);
+      --correct-bg: #dafbe1; --correct-border: #1a7f37; --correct-text: #1a7f37;
+      --wrong-bg: #ffebe9; --wrong-border: #cf222e; --wrong-text: #cf222e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg); color: var(--text); line-height: 1.6;
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 1.5rem 1rem;
+    }
+    .container { width: 100%; max-width: 860px; }
+    header {
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: center; }
+    h1 { font-size: 1.35rem; color: var(--text-heading); font-weight: 600; }
+    .nav-actions { display: flex; gap: 0.5rem; }
+    .btn-action-sm {
+      background: transparent; border: 1px solid var(--border); color: var(--text);
+      padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; text-decoration: none; transition: all 0.2s;
+    }
+    .btn-action-sm:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem; }
+    .filter-btn {
+      background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+      padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s;
+    }
+    .filter-btn.active, .filter-btn:hover { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+    .progress-track { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.3s ease; }
+    .meta-status { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); }
+    .grid-jump {
+      display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 1.25rem; padding: 0.75rem;
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); max-height: 135px; overflow-y: auto;
+    }
+    .grid-btn {
+      width: 28px; height: 28px; border-radius: 4px; border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .grid-btn.current { border-color: var(--accent); color: var(--accent); font-weight: bold; }
+    .grid-btn.answered-correct { background: var(--correct-bg); border-color: var(--correct-border); color: var(--correct-text); }
+    .grid-btn.answered-wrong { background: var(--wrong-bg); border-color: var(--wrong-border); color: var(--wrong-text); }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; margin-bottom: 1.25rem; }
+    .category-badge { display: inline-block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 0.75rem; font-weight: 600; }
+    .question-title { font-size: 1.15rem; color: var(--text-heading); margin-bottom: 1.25rem; font-weight: 500; }
+    .options-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+    .option-item {
+      display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.9rem 1rem;
+      background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 0.95rem; color: var(--text);
+    }
+    .option-item:hover:not(.disabled) { border-color: var(--accent); background: var(--accent-glow); }
+    .option-item.correct { background: var(--correct-bg) !important; border-color: var(--correct-border) !important; color: var(--correct-text) !important; }
+    .option-item.wrong { background: var(--wrong-bg) !important; border-color: var(--wrong-border) !important; color: var(--wrong-text) !important; }
+    .option-key { font-weight: 600; color: var(--text-muted); min-width: 1.25rem; }
+    .explanation-panel { margin-top: 1.25rem; padding: 1rem; border-radius: 6px; font-size: 0.9rem; display: none; line-height: 1.5; }
+    .explanation-panel.show { display: block; }
+    .explanation-panel.correct { background: var(--correct-bg); border: 1px solid var(--correct-border); color: var(--correct-text); }
+    .explanation-panel.wrong { background: var(--wrong-bg); border: 1px solid var(--wrong-border); color: var(--wrong-text); }
+    .nav-controls { display: flex; justify-content: space-between; margin-top: 1.5rem; }
+    .btn {
+      background: var(--accent); color: #ffffff; border: none; padding: 0.65rem 1.3rem;
+      border-radius: 6px; font-size: 0.9rem; font-weight: 500; cursor: pointer;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .summary-card { display: none; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; text-align: center; }
+    .summary-score { font-size: 3rem; font-weight: 700; color: var(--accent); margin: 1rem 0; }
+    .review-list { margin-top: 2rem; text-align: left; display: flex; flex-direction: column; gap: 1rem; }
+    .review-item { padding: 1rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; }
+    .review-item.pass { border-left: 4px solid var(--correct-border); }
+    .review-item.fail { border-left: 4px solid var(--wrong-border); }
+  </style>
+</head>
+<body data-theme="dark">
+<div class="container">
+  <header>
+    <div class="header-top">
+      <h1>Chapter 2: Unicellular Eukaryotes</h1>
+      <div class="nav-actions">
+        <a href="Zoology.html" class="btn-action-sm">← Portal Home</a>
+        <button class="btn-action-sm" onclick="toggleTheme()">Theme</button>
+      </div>
+    </div>
+    <div class="filter-bar" id="category-filters"></div>
+    <div class="progress-track"><div class="progress-fill" id="progress-bar"></div></div>
+    <div class="meta-status">
+      <span id="question-indicator">Question 1 of --</span>
+      <span id="score-indicator">Score: 0 / 0</span>
+    </div>
+  </header>
+
+  <div class="grid-jump" id="grid-jump"></div>
+
+  <div class="card" id="quiz-card">
+    <span class="category-badge" id="cat-badge">Category</span>
+    <h2 class="question-title" id="question-text">Question Prompt</h2>
+    <div class="options-grid" id="options-box"></div>
+    <div class="explanation-panel" id="explanation-box"></div>
+    <div class="nav-controls">
+      <button class="btn btn-secondary" id="prev-btn" onclick="prevQuestion()" disabled>&larr; Previous</button>
+      <button class="btn" id="next-btn" onclick="nextQuestion()">Next &rarr;</button>
+    </div>
+  </div>
+
+  <div class="summary-card" id="summary-card">
+    <h2>Chapter 2 Completed</h2>
+    <div class="summary-score" id="final-score-display">0%</div>
+    <p id="final-remark" style="color: var(--text-muted);"></p>
+    <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; justify-content: center;">
+      <a href="Zoology.html" class="btn btn-secondary" style="text-decoration:none; display:inline-block;">Return Home</a>
+      <button class="btn" onclick="resetQuiz()">Retake Quiz</button>
+    </div>
+    <div class="review-list" id="review-container"></div>
+  </div>
+</div>
+
+<script>
+const questions = [
+  // --- PROTOZOA DEFINITION & CHARACTERISTICS ---
+  {
+    category: "Protozoan Characteristics",
+    q: "How are protozoa primarily characterized?",
+    options: ["As multicellular eukaryotes with plant-like features", "As unicellular eukaryotic organisms with animal-like features", "As prokaryotic organisms that lack a nucleus", "As a single strict phylogenetic group"],
+    answer: 1,
+    note: "Protozoa are defined as unicellular eukaryotic organisms with animal-like features[cite: 2]."
+  },
+  {
+    category: "Protozoan Characteristics",
+    q: "Why is 'Protozoa' not considered an accurate classification by modern standards?",
+    options: ["They represent a diverse assemblage rather than a single phylogenetic group", "They are entirely extinct", "They are actually classified as bacteria", "They do not possess a true nucleus"],
+    answer: 0,
+    note: "'Protozoa' is not an accurate classification because these organisms represent a diverse assemblage rather than a single phylogenetic group[cite: 2]."
+  },
+  {
+    category: "Protozoan Characteristics",
+    q: "Approximately how many species of protozoa are known to be symbiotic in or on other plants or animals?",
+    options: ["100", "1,000", "10,000", "100,000"],
+    answer: 2,
+    note: "At least 10,000 species of protozoa are symbiotic in or on other plants or animals[cite: 2]."
+  },
+  {
+    category: "Symbiotic Relationships",
+    q: "In which type of symbiotic relationship does one organism benefit while the other is neither harmed nor helped?",
+    options: ["Mutualistic", "Commensalistic", "Parasitic", "Pathogenic"],
+    answer: 1,
+    note: "Commensalistic describes a relationship where one organism benefits while the other is neither harmed nor helped[cite: 2]."
+  },
+
+  // --- FEEDING & LOCOMOTION ---
+  {
+    category: "Feeding Methods",
+    q: "What term describes heterotrophic feeders that feed specifically on visible particles?",
+    options: ["Osmotrophs", "Autotrophs", "Phagotrophs (holozoic feeders)", "Saprozoic feeders"],
+    answer: 2,
+    note: "Phagotrophs (holozoic feeders) are heterotrophs that feed on visible particles[cite: 2]."
+  },
+  {
+    category: "Feeding Methods",
+    q: "Osmotrophs (saprozoic feeders) obtain their nutrients by:",
+    options: ["Producing their own organic molecules", "Feeding on visible, solid particles", "Feeding on soluble food", "Absorbing sunlight for photosynthesis"],
+    answer: 2,
+    note: "Osmotrophs (saprozoic feeders) feed on soluble food[cite: 2]."
+  },
+  {
+    category: "Locomotion Methods",
+    q: "Which of the following is NOT one of the three primary mechanisms of protozoan locomotion?",
+    options: ["Flagella", "Cilia", "Pseudopodia", "Muscular contraction"],
+    answer: 3,
+    note: "The three primary mechanisms for locomotion are flagella, cilia, and pseudopodia[cite: 2]."
+  },
+  {
+    category: "Locomotion Methods",
+    q: "What morphological distinction exists between cilia and flagella?",
+    options: ["Cilia are made of chitin, while flagella are made of keratin", "Flagella are only found in prokaryotes", "There is no real morphological distinction between cilia and flagella", "Cilia are always internal, flagella are external"],
+    answer: 2,
+    note: "Important Note: No real morphological distinction exists between cilia and flagella[cite: 2]."
+  },
+  {
+    category: "Locomotion Methods",
+    q: "Parasitic protozoans differ from free-living protozoans in their locomotion because they typically:",
+    options: ["Move at much faster speeds", "Lack distinct locomotory structures", "Rely entirely on flagella", "Have highly complex muscular systems"],
+    answer: 1,
+    note: "Parasitic protozoans typically lack distinct locomotory structures[cite: 2]."
+  },
+  {
+    category: "Cellular Movement",
+    q: "During ameboid movement, which part of the cytoplasm is described as being in a granular, fluid (sol) state?",
+    options: ["Ectoplasm", "Endoplasm", "Pellicle", "Myelin"],
+    answer: 1,
+    note: "The endoplasm is granular, more fluid (sol state), and contains the nucleus and cytoplasmic organelles[cite: 2]."
+  },
+  {
+    category: "Cellular Movement",
+    q: "Amoeboid movement involves the extension and contraction of which temporary projections?",
+    options: ["Flagella", "Cilia", "Cirri", "Pseudopodia"],
+    answer: 3,
+    note: "Amoeboid movement involves extension and contraction of pseudopodia for locomotion and feeding[cite: 2]."
+  },
+
+  // --- CELLULAR STRUCTURES ---
+  {
+    category: "Cellular Structures",
+    q: "Which protozoan group is recognized as being the most structurally complex?",
+    options: ["Amoebas", "Flagellates", "Ciliates", "Dinoflagellates"],
+    answer: 2,
+    note: "Ciliates are described as the most structurally complex of the protozoa[cite: 2]."
+  },
+  {
+    category: "Cellular Structures",
+    q: "In ciliates, what is the role of the micronucleus?",
+    options: ["It serves as the somatic nucleus", "It acts as the germ line nucleus", "It regulates water expulsion", "It is responsible for cellular secretion"],
+    answer: 1,
+    note: "In ciliates, the micronucleus functions as the germ line nucleus[cite: 2]."
+  },
+  {
+    category: "Cellular Structures",
+    q: "Which organelle serves as a water expulsion vesicle acting as an osmoregulatory organelle?",
+    options: ["Macronucleus", "Golgi body", "Contractile vacuole", "Extrusome"],
+    answer: 2,
+    note: "The contractile vacuole functions as a water expulsion vesicle serving as an osmoregulatory organelle[cite: 2]."
+  },
+  {
+    category: "Cellular Structures",
+    q: "In Paramecium, how is water collected before being expelled by the contractile vacuole?",
+    options: ["Absorbed through the cilia", "Collected by the endomembrane system and emptied into feeder canals", "Produced as a byproduct of photosynthesis", "Ingested through phagocytosis"],
+    answer: 1,
+    note: "In Paramecium, water is collected by the endomembrane system and emptied into feeder canals before accumulating in the contractile vesicle[cite: 2]."
+  },
+
+  // --- REPRODUCTION ---
+  {
+    category: "Reproduction",
+    q: "Which form of asexual reproduction occurs when an organism divides into two equal parts?",
+    options: ["Budding", "Multiple fission", "Binary fission", "Conjugation"],
+    answer: 2,
+    note: "Binary fission is an asexual mechanism where the organism divides into two equal parts[cite: 2]."
+  },
+  {
+    category: "Reproduction",
+    q: "What defines schizogony (multiple fission)?",
+    options: ["Gametes fuse without nuclear division", "Multiple nuclear divisions precede cytokinesis, forming many individuals simultaneously", "The organism divides horizontally across its cilia", "A smaller individual develops directly on the parent"],
+    answer: 1,
+    note: "In multiple fission (schizogony), multiple nuclear divisions precede cytokinesis and many individuals form simultaneously[cite: 2]."
+  },
+  {
+    category: "Reproduction",
+    q: "What critical distinction occurs during sexual reproduction in unicellular eukaryotes compared to animals?",
+    options: ["They do not use meiosis", "No embryonic development occurs (no embryos form)", "They skip the diploid stage entirely", "Gametes cannot fuse"],
+    answer: 1,
+    note: "An important distinction in their sexual reproduction is that no embryonic development occurs (no embryos form)[cite: 2]."
+  },
+  {
+    category: "Reproduction",
+    q: "What is the term for gametes that appear similar in form?",
+    options: ["Anisogametes", "Isogametes", "Pronuclei", "Zygotes"],
+    answer: 1,
+    note: "Isogametes are gametes that appear similar in form[cite: 2]."
+  },
+  {
+    category: "Reproduction",
+    q: "What occurs during conjugation in Paramecium?",
+    options: ["An organism splits into multiple daughter cells immediately", "Two organisms pair and temporarily fuse to exchange gametic nuclei", "The macronucleus absorbs the micronucleus", "They form a hard cyst to survive dry conditions"],
+    answer: 1,
+    note: "Conjugation is a specialized mechanism where two organisms pair and exchange gametic nuclei through temporary fusion[cite: 2]."
+  },
+
+  // --- MAJOR CLADES: AMOEBOZOA & FORNICATA ---
+  {
+    category: "Phylum Amoebozoa",
+    q: "Members of the Phylum Amoebozoa include free-living forms, parasitic forms, and both naked and __________ amoebas.",
+    options: ["Ciliated", "Testate (shell-bearing)", "Photosynthetic", "Bioluminescent"],
+    answer: 1,
+    note: "Amoebozoa includes naked and testate (shell-bearing) amoebas[cite: 2]."
+  },
+  {
+    category: "Phylum Amoebozoa",
+    q: "Which Amoebozoan is associated with contaminated contact lenses and can kill cells of the human cornea?",
+    options: ["Entamoeba histolytica", "Physarum sp.", "Dictyostelium sp.", "Acanthamoeba castellani"],
+    answer: 3,
+    note: "Acanthamoeba castellani kills cells of the human cornea and is associated with contaminated contact lenses[cite: 2]."
+  },
+  {
+    category: "Phylum Amoebozoa",
+    q: "How is Entamoeba histolytica primarily transmitted to humans?",
+    options: ["Bites from the tsetse fly", "Sexually transmitted", "Contaminated food and water", "Inhalation of airborne spores"],
+    answer: 2,
+    note: "Entamoeba histolytica is transmitted through contaminated food and water[cite: 2]."
+  },
+  {
+    category: "Fornicata",
+    q: "Giardia species inhabit the digestive tract of humans, birds, and amphibians. What is the primary symptom of infection?",
+    options: ["African Sleeping Sickness", "Vaginitis", "Watery, sometimes foul-smelling diarrhea", "Corneal blindness"],
+    answer: 2,
+    note: "Giardia infection causes watery, sometimes foul-smelling diarrhea[cite: 2]."
+  },
+
+  // --- PARABASALIDA & EUGLENOZOA ---
+  {
+    category: "Phylum Parabasalida",
+    q: "Which Parabasalid organism infects the urogenital tract, is sexually transmitted, and causes vaginitis in females while showing no symptoms in males?",
+    options: ["Trypanosoma brucei", "Trichomonas vaginalis", "Trichonympha sp.", "Plasmodium falciparum"],
+    answer: 1,
+    note: "Trichomonas vaginalis is a sexually transmitted pathogen causing vaginitis in females with NO symptoms in males[cite: 2]."
+  },
+  {
+    category: "Phylum Parabasalida",
+    q: "Trichonympha sp. forms a mutualistic symbiotic relationship inside which host organism?",
+    options: ["Humans", "Termites", "Mosquitoes", "Birds"],
+    answer: 1,
+    note: "Trichonympha sp. are mutualistic symbionts in termites[cite: 2]."
+  },
+  {
+    category: "Phylum Euglenozoa",
+    q: "What flexible feeding mechanism allows Euglena to survive when kept in the dark?",
+    options: ["They transition to saprozoic feeding", "They use flagella to capture small fish", "They enter a state of conjugation", "They become completely parasitic"],
+    answer: 0,
+    note: "Euglena are normally autotrophic but can use saprozoic feeding when kept in the dark[cite: 2]."
+  },
+  {
+    category: "Phylum Euglenozoa",
+    q: "Which organism is the disease agent for African Sleeping Sickness?",
+    options: ["Trypanosoma brucei gambiense", "Trichomonas vaginalis", "Plasmodium vivax", "Giardia sp."],
+    answer: 0,
+    note: "Trypanosoma brucei gambiense is the disease agent that causes African Sleeping Sickness[cite: 2]."
+  },
+  {
+    category: "Phylum Euglenozoa",
+    q: "What is the vector organism responsible for transmitting African Sleeping Sickness?",
+    options: ["Anopheles mosquito", "Tsetse fly (Glossina sp.)", "Termites", "Ticks"],
+    answer: 1,
+    note: "The vector organism for Trypanosoma is the tsetse fly (Glossina sp.)[cite: 2]."
+  },
+
+  // --- CILIOPHORA, DINOFLAGELLATA & APICOMPLEXA ---
+  {
+    category: "Phylum Ciliophora",
+    q: "What are 'cirri' in the context of ciliate structural variants?",
+    options: ["Internal feeding tubes", "Larger structures than most other cilia", "Cysts used for survival", "The fusion of male and female pronuclei"],
+    answer: 1,
+    note: "Cirri are structural variants that are larger structures than most other cilia[cite: 2]."
+  },
+  {
+    category: "Phylum Ciliophora",
+    q: "During binary fission, how does division occur in Paramecium?",
+    options: ["Longitudinally through the macronucleus", "Across rows of cilia", "By budding from the posterior end", "Through multiple schizogony events"],
+    answer: 1,
+    note: "In Paramecium, binary fission division occurs across rows of cilia[cite: 2]."
+  },
+  {
+    category: "Phylum Dinoflagellata",
+    q: "Dinoflagellates are known for a special feature where many species are:",
+    options: ["Multicellular", "Bioluminescent", "Completely lacking in chloroplasts", "Obligate intracellular parasites of mammals"],
+    answer: 1,
+    note: "A special feature of Dinoflagellates is that many are bioluminescent[cite: 2]."
+  },
+  {
+    category: "Phylum Dinoflagellata",
+    q: "What major ecological phenomenon on coastlines is caused by Dinoflagellates?",
+    options: ["Coral bleaching", "Red tide appearances", "Ocean acidification", "Ozone depletion"],
+    answer: 1,
+    note: "Dinoflagellates are responsible for 'red tide' appearances on coastlines[cite: 2]."
+  },
+  {
+    category: "Phylum Apicomplexa",
+    q: "Members of the Class Coccidea (e.g., Plasmodium species) serve what ecological role?",
+    options: ["Free-living freshwater predators", "Intracellular parasites of invertebrates and vertebrates", "Mutualistic symbionts in plants", "Photosynthetic producers in marine food webs"],
+    answer: 1,
+    note: "Apicomplexans (Class Coccidea) act as intracellular parasites of invertebrates and vertebrates[cite: 2]."
+  },
+  {
+    category: "Phylum Apicomplexa",
+    q: "Which vector organism carries all four forms of malarial parasites (Plasmodium species)?",
+    options: ["Tsetse fly", "Anopheles mosquitoes", "Sandflies", "Contaminated drinking water"],
+    answer: 1,
+    note: "Anopheles mosquitoes carry all four forms of malarial parasites[cite: 2]."
+  }
+];
+
+let activeFilter = "ALL", filteredQuestions = [], currentIndex = 0, userAnswers = {};
+
+function init() { buildCategoryFilters(); filterQuestionSet(); }
+
+function buildCategoryFilters() {
+  const container = document.getElementById("category-filters");
+  container.innerHTML = "";
+  const categories = ["ALL", ...new Set(questions.map(q => q.category))];
+  categories.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = `filter-btn ${cat === activeFilter ? "active" : ""}`;
+    btn.textContent = cat === "ALL" ? `All Topics (${questions.length})` : cat;
+    btn.onclick = () => { activeFilter = cat; filterQuestionSet(); buildCategoryFilters(); };
+    container.appendChild(btn);
+  });
+}
+
+function filterQuestionSet() {
+  filteredQuestions = activeFilter !== "ALL" ? questions.filter(q => q.category === activeFilter) : [...questions];
+  currentIndex = 0; userAnswers = {}; initGrid(); renderQuestion();
+}
+
+function initGrid() {
+  const grid = document.getElementById("grid-jump");
+  grid.innerHTML = "";
+  filteredQuestions.forEach((_, idx) => {
+    const btn = document.createElement("button");
+    btn.className = "grid-btn"; btn.textContent = idx + 1;
+    btn.onclick = () => jumpToQuestion(idx);
+    grid.appendChild(btn);
+  });
+}
+
+function updateGridStyles() {
+  const btns = document.querySelectorAll(".grid-btn");
+  btns.forEach((btn, idx) => {
+    btn.className = "grid-btn";
+    if (idx === currentIndex) btn.classList.add("current");
+    if (userAnswers[idx] !== undefined) {
+      if (userAnswers[idx] === filteredQuestions[idx].answer) btn.classList.add("answered-correct");
+      else btn.classList.add("answered-wrong");
+    }
+  });
+}
+
+function renderQuestion() {
+  const item = filteredQuestions[currentIndex];
+  document.getElementById("cat-badge").textContent = item.category;
+  document.getElementById("question-text").textContent = item.q;
+  document.getElementById("question-indicator").textContent = `Question ${currentIndex + 1} of ${filteredQuestions.length}`;
+  
+  const optionsBox = document.getElementById("options-box");
+  optionsBox.innerHTML = "";
+  const expBox = document.getElementById("explanation-box");
+  expBox.className = "explanation-panel"; expBox.innerHTML = "";
+
+  const hasAnswered = userAnswers[currentIndex] !== undefined;
+  item.options.forEach((opt, idx) => {
+    const div = document.createElement("div");
+    div.className = "option-item";
+    if (hasAnswered) div.classList.add("disabled");
+    div.innerHTML = `<span class="option-key">${String.fromCharCode(65 + idx)}.</span><span>${opt}</span>`;
+    if (hasAnswered) {
+      if (idx === item.answer) div.classList.add("correct");
+      if (userAnswers[currentIndex] === idx && idx !== item.answer) div.classList.add("wrong");
+    } else {
+      div.onclick = () => { if (userAnswers[currentIndex] === undefined) { userAnswers[currentIndex] = idx; renderQuestion(); } };
+    }
+    optionsBox.appendChild(div);
+  });
+
+  if (hasAnswered) {
+    const isCorr = userAnswers[currentIndex] === item.answer;
+    expBox.classList.add("show", isCorr ? "correct" : "wrong");
+    expBox.innerHTML = `<strong>${isCorr ? "✓ Correct!" : "✗ Incorrect."}</strong> ${item.note}`;
+  }
+
+  document.getElementById("prev-btn").disabled = currentIndex === 0;
+  document.getElementById("next-btn").textContent = (currentIndex === filteredQuestions.length - 1) ? "Finish & Review" : "Next →";
+  
+  const corrCount = Object.keys(userAnswers).filter(k => userAnswers[k] === filteredQuestions[k].answer).length;
+  document.getElementById("score-indicator").textContent = `Score: ${corrCount} / ${Object.keys(userAnswers).length}`;
+  document.getElementById("progress-bar").style.width = `${((currentIndex + 1) / filteredQuestions.length) * 100}%`;
+  updateGridStyles();
+}
+
+function jumpToQuestion(idx) { currentIndex = idx; renderQuestion(); }
+function prevQuestion() { if (currentIndex > 0) { currentIndex--; renderQuestion(); } }
+function nextQuestion() {
+  if (currentIndex < filteredQuestions.length - 1) { currentIndex++; renderQuestion(); }
+  else {
+    document.getElementById("quiz-card").style.display = "none";
+    document.getElementById("summary-card").style.display = "block";
+    const total = filteredQuestions.length;
+    const corr = Object.keys(userAnswers).filter(k => userAnswers[k] === filteredQuestions[k].answer).length;
+    const pct = Math.round((corr / total) * 100) || 0;
+    document.getElementById("final-score-display").textContent = `${pct}% (${corr}/${total})`;
+    document.getElementById("final-remark").textContent = pct >= 80 ? "Great job mastering Chapter 2!" : "Review your notes and try again.";
+    
+    const reviewBox = document.getElementById("review-container");
+    reviewBox.innerHTML = "";
+    filteredQuestions.forEach((item, idx) => {
+      const uChoice = userAnswers[idx];
+      const isCorr = uChoice === item.answer;
+      const d = document.createElement("div");
+      d.className = `review-item ${isCorr ? "pass" : "fail"}`;
+      d.innerHTML = `<strong>Q${idx + 1}: ${item.q}</strong><br/><span style="color:${isCorr?"var(--correct-text)":"var(--wrong-text)"}">Your Answer: ${uChoice !== undefined ? item.options[uChoice] : "Unanswered"}</span><br/>${!isCorr?`Correct: <strong>${item.options[item.answer]}</strong><br/>`:''}<small style="color:var(--text-muted);">${item.note}</small>`;
+      reviewBox.appendChild(d);
+    });
+  }
+}
+
+function resetQuiz() {
+  userAnswers = {}; currentIndex = 0;
+  document.getElementById("summary-card").style.display = "none";
+  document.getElementById("quiz-card").style.display = "block";
+  renderQuestion();
+}
+
+function toggleTheme() {
+  const cur = document.body.getAttribute("data-theme");
+  document.body.setAttribute("data-theme", cur === "light" ? "dark" : "light");
+}
+
+window.onload = init;
+</script>
+</body>
+</html>

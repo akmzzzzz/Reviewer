@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter 4: Cnidaria</title>
+  <style>
+    :root {
+      --bg: #0d1117; --card-bg: #161b22; --border: #30363d; --text: #c9d1d9;
+      --text-heading: #f0f6fc; --text-muted: #8b949e; --accent: #58a6ff;
+      --accent-hover: #1f6feb; --accent-glow: rgba(88, 166, 255, 0.12);
+      --correct-bg: rgba(46, 160, 67, 0.15); --correct-border: #2ea043; --correct-text: #3fb950;
+      --wrong-bg: rgba(248, 81, 73, 0.15); --wrong-border: #f85149; --wrong-text: #ff7b72; --radius: 8px;
+    }
+    [data-theme="light"] {
+      --bg: #f6f8fa; --card-bg: #ffffff; --border: #d0d7de; --text: #24292f;
+      --text-heading: #0969da; --text-muted: #57606a; --accent: #0969da;
+      --accent-hover: #084298; --accent-glow: rgba(9, 105, 218, 0.08);
+      --correct-bg: #dafbe1; --correct-border: #1a7f37; --correct-text: #1a7f37;
+      --wrong-bg: #ffebe9; --wrong-border: #cf222e; --wrong-text: #cf222e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg); color: var(--text); line-height: 1.6;
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 1.5rem 1rem;
+    }
+    .container { width: 100%; max-width: 860px; }
+    header {
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: center; }
+    h1 { font-size: 1.35rem; color: var(--text-heading); font-weight: 600; }
+    .nav-actions { display: flex; gap: 0.5rem; }
+    .btn-action-sm {
+      background: transparent; border: 1px solid var(--border); color: var(--text);
+      padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; text-decoration: none; transition: all 0.2s;
+    }
+    .btn-action-sm:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem; }
+    .filter-btn {
+      background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+      padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s;
+    }
+    .filter-btn.active, .filter-btn:hover { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+    .progress-track { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.3s ease; }
+    .meta-status { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); }
+    .grid-jump {
+      display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 1.25rem; padding: 0.75rem;
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); max-height: 135px; overflow-y: auto;
+    }
+    .grid-btn {
+      width: 28px; height: 28px; border-radius: 4px; border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .grid-btn.current { border-color: var(--accent); color: var(--accent); font-weight: bold; }
+    .grid-btn.answered-correct { background: var(--correct-bg); border-color: var(--correct-border); color: var(--correct-text); }
+    .grid-btn.answered-wrong { background: var(--wrong-bg); border-color: var(--wrong-border); color: var(--wrong-text); }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; margin-bottom: 1.25rem; }
+    .category-badge { display: inline-block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 0.75rem; font-weight: 600; }
+    .question-title { font-size: 1.15rem; color: var(--text-heading); margin-bottom: 1.25rem; font-weight: 500; }
+    .options-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+    .option-item {
+      display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.9rem 1rem;
+      background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 0.95rem; color: var(--text);
+    }
+    .option-item:hover:not(.disabled) { border-color: var(--accent); background: var(--accent-glow); }
+    .option-item.correct { background: var(--correct-bg) !important; border-color: var(--correct-border) !important; color: var(--correct-text) !important; }
+    .option-item.wrong { background: var(--wrong-bg) !important; border-color: var(--wrong-border) !important; color: var(--wrong-text) !important; }
+    .option-key { font-weight: 600; color: var(--text-muted); min-width: 1.25rem; }
+    .explanation-panel { margin-top: 1.25rem; padding: 1rem; border-radius: 6px; font-size: 0.9rem; display: none; line-height: 1.5; }
+    .explanation-panel.show { display: block; }
+    .explanation-panel.correct { background: var(--correct-bg); border: 1px solid var(--correct-border); color: var(--correct-text); }
+    .explanation-panel.wrong { background: var(--wrong-bg); border: 1px solid var(--wrong-border); color: var(--wrong-text); }
+    .nav-controls { display: flex; justify-content: space-between; margin-top: 1.5rem; }
+    .btn {
+      background: var(--accent); color: #ffffff; border: none; padding: 0.65rem 1.3rem;
+      border-radius: 6px; font-size: 0.9rem; font-weight: 500; cursor: pointer;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .summary-card { display: none; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; text-align: center; }
+    .summary-score { font-size: 3rem; font-weight: 700; color: var(--accent); margin: 1rem 0; }
+    .review-list { margin-top: 2rem; text-align: left; display: flex; flex-direction: column; gap: 1rem; }
+    .review-item { padding: 1rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; }
+    .review-item.pass { border-left: 4px solid var(--correct-border); }
+    .review-item.fail { border-left: 4px solid var(--wrong-border); }
+  </style>
+</head>
+<body data-theme="dark">
+<div class="container">
+  <header>
+    <div class="header-top">
+      <h1>Chapter 4: Cnidaria</h1>
+      <div class="nav-actions">
+        <a href="Zoology.html" class="btn-action-sm">← Portal Home</a>
+        <button class="btn-action-sm" onclick="toggleTheme()">Theme</button>
+      </div>
+    </div>
+    <div class="filter-bar" id="category-filters"></div>
+    <div class="progress-track"><div class="progress-fill" id="progress-bar"></div></div>
+    <div class="meta-status">
+      <span id="question-indicator">Question 1 of --</span>
+      <span id="score-indicator">Score: 0 / 0</span>
+    </div>
+  </header>
+
+  <div class="grid-jump" id="grid-jump"></div>
+
+  <div class="card" id="quiz-card">
+    <span class="category-badge" id="cat-badge">Category</span>
+    <h2 class="question-title" id="question-text">Question Prompt</h2>
+    <div class="options-grid" id="options-box"></div>
+    <div class="explanation-panel" id="explanation-box"></div>
+    <div class="nav-controls">
+      <button class="btn btn-secondary" id="prev-btn" onclick="prevQuestion()" disabled>&larr; Previous</button>
+      <button class="btn" id="next-btn" onclick="nextQuestion()">Next &rarr;</button>
+    </div>
+  </div>
+
+  <div class="summary-card" id="summary-card">
+    <h2>Chapter 4 Completed</h2>
+    <div class="summary-score" id="final-score-display">0%</div>
+    <p id="final-remark" style="color: var(--text-muted);"></p>
+    <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; justify-content: center;">
+      <a href="index.html" class="btn btn-secondary" style="text-decoration:none; display:inline-block;">Return Home</a>
+      <button class="btn" onclick="resetQuiz()">Retake Quiz</button>
+    </div>
+    <div class="review-list" id="review-container"></div>
+  </div>
+</div>
+
+<script>
+const questions = [
+  // --- SUMMARY & BIOLOGICAL FEATURES ---
+  {
+    category: "Summary",
+    q: "What is the etymological meaning of the Greek root 'knide' in Cnidaria?",
+    options: ["Cup", "Nettle", "Flower", "Box"],
+    answer: 1,
+    note: "The phylum Cnidaria gets its name from the Greek word knide, meaning 'nettle'[cite: 2]."
+  },
+  {
+    category: "Summary",
+    q: "The dimorphic body plan of Cnidarians consists of which two forms?",
+    options: ["Larva and Pupa", "Trophozoite and Cyst", "Polyp and Medusa", "Asconoid and Syconoid"],
+    answer: 2,
+    note: "The dimorphic body plan consists of the polyp (sedentary) and medusa (free-swimming) forms[cite: 2]."
+  },
+  {
+    category: "Biological Features",
+    q: "What specialized cells are located in the invaginations of ectodermal cells and characterize the phylum Cnidaria?",
+    options: ["Choanocytes", "Cnidocytes", "Ocelli", "Statocysts"],
+    answer: 1,
+    note: "Cnidocytes are specialized cells located in the invaginations of ectodermal (and some endodermal) cells[cite: 2]."
+  },
+  {
+    category: "Biological Features",
+    q: "What is the specific name of the stinging organelle housed within the cnidocyte?",
+    options: ["Velum", "Pedalium", "Nematocyst", "Lappet"],
+    answer: 2,
+    note: "Nematocysts are the stinging organelles housed within cnidocytes[cite: 2]."
+  },
+  {
+    category: "Biological Features",
+    q: "While adult Cnidarians are radially symmetrical, what characteristic of their planula larva sparks debate regarding potential bilateral ancestry?",
+    options: ["It possesses a hardened exoskeleton", "It forms a distinct dorsal fin", "It lacks any symmetry completely", "It exhibits an anterior–posterior axis"],
+    answer: 3,
+    note: "The planula larva exhibits an anterior–posterior axis, leading to debates regarding potential bilateral ancestry[cite: 2]."
+  },
+
+  // --- BODY PLANS (POLYP & MEDUSA) ---
+  {
+    category: "Body Plans",
+    q: "Which of the following best describes the structure of the Polyp (Hydroid) form?",
+    options: ["Bell-shaped with tetramerous symmetry", "Tubular body with the mouth directed upward, surrounded by tentacles", "Square umbrella with tentacles extending from corners", "Free-swimming with statocysts and ocelli"],
+    answer: 1,
+    note: "The polyp structure is a tubular body with the mouth directed upward, surrounded by tentacles[cite: 2]."
+  },
+  {
+    category: "Body Plans",
+    q: "How does the polyp form reproduce asexually?",
+    options: ["Meiosis and fertilization", "Budding, fission, or pedal laceration", "Production of ephyrae", "Direct transformation into a new polyp"],
+    answer: 1,
+    note: "Polyp reproduction occurs asexually via budding, fission, or pedal laceration[cite: 2]."
+  },
+  {
+    category: "Body Plans",
+    q: "What defines a colony in the polyp form?",
+    options: ["Multiple polyps swimming together in schools", "Buds that remain attached and form a shared gastrovascular cavity", "A single polyp housing multiple mutually beneficial crab species", "Polyps that rapidly cycle through medusa stages"],
+    answer: 1,
+    note: "If buds remain attached, they form a colony with a shared gastrovascular cavity[cite: 2]."
+  },
+  {
+    category: "Body Plans",
+    q: "What type of symmetry is characteristic of the Medusa form?",
+    options: ["Bilateral symmetry", "Pentamerous (fives) symmetry", "Tetramerous (fours) symmetry", "Asymmetry"],
+    answer: 2,
+    note: "The Medusa form is bell- or umbrella-shaped with tetramerous (fours) symmetry[cite: 2]."
+  },
+  {
+    category: "Body Plans",
+    q: "In the medusa form, what sensory organ is specifically responsible for orientation?",
+    options: ["Ocelli", "Statocysts", "Camera-type eyes", "Nematocysts"],
+    answer: 1,
+    note: "Medusae are equipped with statocysts for orientation[cite: 2]."
+  },
+  {
+    category: "Body Plans",
+    q: "What sensory organ in the medusa form acts as a light sensor?",
+    options: ["Statocyst", "Ocelli", "Pedalium", "Coenosarc"],
+    answer: 1,
+    note: "Ocelli are sensory organs serving as light sensors[cite: 2]."
+  },
+  {
+    category: "Body Plans",
+    q: "What structural feature distinguishes Hydromedusae from Scyphomedusae?",
+    options: ["Hydromedusae lack stinging cells", "Hydromedusae possess a velum (shelf-like fold of tissue)", "Scyphomedusae are exclusively freshwater", "Scyphomedusae possess a square umbrella"],
+    answer: 1,
+    note: "Hydromedusae possess a velum, whereas Scyphomedusae lack a velum[cite: 2]."
+  },
+
+  // --- CLASSIFICATION ---
+  {
+    category: "Class Hydrozoa",
+    q: "In a colonial Hydrozoan (like Obelia sp.), what term describes the stalk structure?",
+    options: ["Hydrorhiza", "Zooid", "Coenosarc", "Hydrocauli"],
+    answer: 3,
+    note: "The structure includes the stalk, which is called the hydrocauli[cite: 2]."
+  },
+  {
+    category: "Class Hydrozoa",
+    q: "What connects the terminal zooids in a colonial Hydrozoan?",
+    options: ["Pedalium", "Coenosarc", "Velum", "Hydrorhiza"],
+    answer: 1,
+    note: "Terminal zooids are connected by the coenosarc[cite: 2]."
+  },
+  {
+    category: "Class Scyphozoa",
+    q: "Which class is commonly referred to as the 'Cup Animals'?",
+    options: ["Cubozoa", "Anthozoa", "Scyphozoa", "Hydrozoa"],
+    answer: 2,
+    note: "Class Scyphozoa is known as the 'Cup Animals'[cite: 2]."
+  },
+  {
+    category: "Class Scyphozoa",
+    q: "What distinct feature is found on the umbrella margins of Scyphozoans?",
+    options: ["Indentations with pairs of lappets", "Complex camera-type eyes", "A pronounced velum", "Featherlike tentacles"],
+    answer: 0,
+    note: "Scyphozoan umbrella margins have indentations with pairs of lappets[cite: 2]."
+  },
+  {
+    category: "Class Staurozoa",
+    q: "Which statement best describes the life cycle and structure of Class Staurozoa?",
+    options: ["Medusa dominant; no polyp stage", "No medusa stage; solitary, stalked polyp that attaches to the sea bottom", "Colonial polyps with free-swimming medusae", "Only found in freshwater environments"],
+    answer: 1,
+    note: "Staurozoa have no medusa stage and exist as a solitary, stalked polyp that attaches to the sea bottom[cite: 2]."
+  },
+  {
+    category: "Class Staurozoa",
+    q: "What is unique about the morphology of a Staurozoan polyp?",
+    options: ["It secretes a calcium carbonate shell", "The top resembles a medusa with eight 'arms' ending in tentacle clusters", "It is perfectly square", "It lacks tentacles entirely"],
+    answer: 1,
+    note: "The top of the Staurozoan polyp resembles a medusa with eight 'arms' ending in tentacle clusters[cite: 2]."
+  },
+  {
+    category: "Class Cubozoa",
+    q: "In Class Cubozoa, which stage is dominant?",
+    options: ["The polyp stage", "The medusa stage", "Both stages are equally represented", "Neither; they exist only as planula larvae"],
+    answer: 1,
+    note: "In Cubozoa, the medusa is the dominant stage; the polyp is inconspicuous[cite: 2]."
+  },
+  {
+    category: "Class Cubozoa",
+    q: "From where do the tentacles of a Cubozoan medusa extend?",
+    options: ["The center of the mouth", "Directly from the velum", "From corners at a pedalium", "From the coenosarc"],
+    answer: 2,
+    note: "The structure is a square umbrella with tentacles extending from corners at a pedalium[cite: 2]."
+  },
+  {
+    category: "Class Cubozoa",
+    q: "What highly advanced sensory structures are found in Cubozoans?",
+    options: ["Echolocation organs", "Complex camera-type eyes with a lens and cornea", "Thermal pits for detecting heat", "Advanced auditory canals"],
+    answer: 1,
+    note: "Cubozoans possess complex eyes (ocelli and camera-type eyes with lens and cornea)[cite: 2]."
+  },
+  {
+    category: "Class Anthozoa",
+    q: "Class Anthozoa, meaning 'Flower Animals', is unique among major cnidarian classes because it:",
+    options: ["Lacks a polyp stage entirely", "Consists of the polyp form only; possessing no medusa stage", "Is entirely composed of freshwater species", "Reproduces exclusively via budding"],
+    answer: 1,
+    note: "Anthozoans exist in the polyp form only; there is no medusa stage[cite: 2]."
+  },
+  {
+    category: "Class Anthozoa",
+    q: "What is the primary difference between Hexamerous and Octomerous body plans in Anthozoans?",
+    options: ["Hexamerous polyps are colonial; Octomerous are solitary", "Hexamerous is built on multiples of six; Octomerous is built on a plan of eight with featherlike tentacles", "Hexamerous lacks stinging cells; Octomerous has them", "Hexamerous only lives in deep sea; Octomerous only in shallow water"],
+    answer: 1,
+    note: "Hexamerous plans are built in multiples of six, while Octomerous plans are built on a plan of eight and feature featherlike tentacles[cite: 2]."
+  },
+  {
+    category: "Class Anthozoa",
+    q: "In an Anthozoan mutualistic relationship, what do Zooxanthellae provide?",
+    options: ["Cleaning and ventilation", "Transport to new feeding grounds", "Algal photosynthesis", "Food scraps from their own meals"],
+    answer: 2,
+    note: "Zooxanthellae are dinoflagellates providing algal photosynthesis[cite: 2]."
+  },
+  {
+    category: "Class Anthozoa",
+    q: "In their mutualistic relationship with Anthozoans, what do Damselfishes provide in exchange for protection?",
+    options: ["Algal photosynthesis", "Transport and food scraps", "Cleaning and ventilation", "Nematocyst regeneration"],
+    answer: 2,
+    note: "Damselfishes provide cleaning and ventilation in exchange for protection[cite: 2]."
+  },
+
+  // --- PHYLOGENY ---
+  {
+    category: "Phylogeny",
+    q: "What is a primary point of controversy regarding the evolutionary origin of the Cnidarian life cycle?",
+    options: ["Whether they evolved from plants or fungi", "Whether the polyp or the medusa stage appeared first", "Whether they originally had a terrestrial life stage", "Whether their stinging cells are homologous to vertebrate teeth"],
+    answer: 1,
+    note: "A primary point of contention is the evolutionary origin of the life cycle: whether the polyp or the medusa stage appeared first[cite: 2]."
+  }
+];
+
+let activeFilter = "ALL", filteredQuestions = [], currentIndex = 0, userAnswers = {};
+
+function init() { buildCategoryFilters(); filterQuestionSet(); }
+
+function buildCategoryFilters() {
+  const container = document.getElementById("category-filters");
+  container.innerHTML = "";
+  const categories = ["ALL", ...new Set(questions.map(q => q.category))];
+  categories.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = `filter-btn ${cat === activeFilter ? "active" : ""}`;
+    btn.textContent = cat === "ALL" ? `All Topics (${questions.length})` : cat;
+    btn.onclick = () => { activeFilter = cat; filterQuestionSet(); buildCategoryFilters(); };
+    container.appendChild(btn);
+  });
+}
+
+function filterQuestionSet() {
+  filteredQuestions = activeFilter !== "ALL" ? questions.filter(q => q.category === activeFilter) : [...questions];
+  currentIndex = 0; userAnswers = {}; initGrid(); renderQuestion();
+}
+
+function initGrid() {
+  const grid = document.getElementById("grid-jump");
+  grid.innerHTML = "";
+  filteredQuestions.forEach((_, idx) => {
+    const btn = document.createElement("button");
+    btn.className = "grid-btn"; btn.textContent = idx + 1;
+    btn.onclick = () => jumpToQuestion(idx);
+    grid.appendChild(btn);
+  });
+}
+
+function updateGridStyles() {
+  const btns = document.querySelectorAll(".grid-btn");
+  btns.forEach((btn, idx) => {
+    btn.className = "grid-btn";
+    if (idx === currentIndex) btn.classList.add("current");
+    if (userAnswers[idx] !== undefined) {
+      if (userAnswers[idx] === filteredQuestions[idx].answer) btn.classList.add("answered-correct");
+      else btn.classList.add("answered-wrong");
+    }
+  });
+}
+
+function renderQuestion() {
+  const item = filteredQuestions[currentIndex];
+  document.getElementById("cat-badge").textContent = item.category;
+  document.getElementById("question-text").textContent = item.q;
+  document.getElementById("question-indicator").textContent = `Question ${currentIndex + 1} of ${filteredQuestions.length}`;
+  
+  const optionsBox = document.getElementById("options-box");
+  optionsBox.innerHTML = "";
+  const expBox = document.getElementById("explanation-box");
+  expBox.className = "explanation-panel"; expBox.innerHTML = "";
+
+  const hasAnswered = userAnswers[currentIndex] !== undefined;
+  item.options.forEach((opt, idx) => {
+    const div = document.createElement("div");
+    div.className = "option-item";
+    if (hasAnswered) div.classList.add("disabled");
+    div.innerHTML = `<span class="option-key">${String.fromCharCode(65 + idx)}.</span><span>${opt}</span>`;
+    if (hasAnswered) {
+      if (idx === item.answer) div.classList.add("correct");
+      if (userAnswers[currentIndex] === idx && idx !== item.answer) div.classList.add("wrong");
+    } else {
+      div.onclick = () => { if (userAnswers[currentIndex] === undefined) { userAnswers[currentIndex] = idx; renderQuestion(); } };
+    }
+    optionsBox.appendChild(div);
+  });
+
+  if (hasAnswered) {
+    const isCorr = userAnswers[currentIndex] === item.answer;
+    expBox.classList.add("show", isCorr ? "correct" : "wrong");
+    expBox.innerHTML = `<strong>${isCorr ? "✓ Correct!" : "✗ Incorrect."}</strong> ${item.note}`;
+  }
+
+  document.getElementById("prev-btn").disabled = currentIndex === 0;
+  document.getElementById("next-btn").textContent = (currentIndex === filteredQuestions.length - 1) ? "Finish & Review" : "Next →";
+  
+  const corrCount = Object.keys(userAnswers).filter(k => userAnswers[k] === filteredQuestions[k].answer).length;
+  document.getElementById("score-indicator").textContent = `Score: ${corrCount} / ${Object.keys(userAnswers).length}`;
+  document.getElementById("progress-bar").style.width = `${((currentIndex + 1) / filteredQuestions.length) * 100}%`;
+  updateGridStyles();
+}
+
+function jumpToQuestion(idx) { currentIndex = idx; renderQuestion(); }
+function prevQuestion() { if (currentIndex > 0) { currentIndex--; renderQuestion(); } }
+function nextQuestion() {
+  if (currentIndex < filteredQuestions.length - 1) { currentIndex++; renderQuestion(); }
+  else {
+    document.getElementById("quiz-card").style.display = "none";
+    document.getElementById("summary-card").style.display = "block";
+    const total = filteredQuestions.length;
+    const corr = Object.keys(userAnswers).filter(k => userAnswers[k] === filteredQuestions[k].answer).length;
+    const pct = Math.round((corr / total) * 100) || 0;
+    document.getElementById("final-score-display").textContent = `${pct}% (${corr}/${total})`;
+    document.getElementById("final-remark").textContent = pct >= 80 ? "Great job mastering Chapter 4!" : "Review your notes and try again.";
+    
+    const reviewBox = document.getElementById("review-container");
+    reviewBox.innerHTML = "";
+    filteredQuestions.forEach((item, idx) => {
+      const uChoice = userAnswers[idx];
+      const isCorr = uChoice === item.answer;
+      const d = document.createElement("div");
+      d.className = `review-item ${isCorr ? "pass" : "fail"}`;
+      d.innerHTML = `<strong>Q${idx + 1}: ${item.q}</strong><br/><span style="color:${isCorr?"var(--correct-text)":"var(--wrong-text)"}">Your Answer: ${uChoice !== undefined ? item.options[uChoice] : "Unanswered"}</span><br/>${!isCorr?`Correct: <strong>${item.options[item.answer]}</strong><br/>`:''}<small style="color:var(--text-muted);">${item.note}</small>`;
+      reviewBox.appendChild(d);
+    });
+  }
+}
+
+function resetQuiz() {
+  userAnswers = {}; currentIndex = 0;
+  document.getElementById("summary-card").style.display = "none";
+  document.getElementById("quiz-card").style.display = "block";
+  renderQuestion();
+}
+
+function toggleTheme() {
+  const cur = document.body.getAttribute("data-theme");
+  document.body.setAttribute("data-theme", cur === "light" ? "dark" : "light");
+}
+
+window.onload = init;
+</script>
+</body>
+</html>

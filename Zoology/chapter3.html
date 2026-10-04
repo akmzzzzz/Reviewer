@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter 3: Porifera (Sponges)</title>
+  <style>
+    :root {
+      --bg: #0d1117; --card-bg: #161b22; --border: #30363d; --text: #c9d1d9;
+      --text-heading: #f0f6fc; --text-muted: #8b949e; --accent: #58a6ff;
+      --accent-hover: #1f6feb; --accent-glow: rgba(88, 166, 255, 0.12);
+      --correct-bg: rgba(46, 160, 67, 0.15); --correct-border: #2ea043; --correct-text: #3fb950;
+      --wrong-bg: rgba(248, 81, 73, 0.15); --wrong-border: #f85149; --wrong-text: #ff7b72; --radius: 8px;
+    }
+    [data-theme="light"] {
+      --bg: #f6f8fa; --card-bg: #ffffff; --border: #d0d7de; --text: #24292f;
+      --text-heading: #0969da; --text-muted: #57606a; --accent: #0969da;
+      --accent-hover: #084298; --accent-glow: rgba(9, 105, 218, 0.08);
+      --correct-bg: #dafbe1; --correct-border: #1a7f37; --correct-text: #1a7f37;
+      --wrong-bg: #ffebe9; --wrong-border: #cf222e; --wrong-text: #cf222e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg); color: var(--text); line-height: 1.6;
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 1.5rem 1rem;
+    }
+    .container { width: 100%; max-width: 860px; }
+    header {
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: center; }
+    h1 { font-size: 1.35rem; color: var(--text-heading); font-weight: 600; }
+    .nav-actions { display: flex; gap: 0.5rem; }
+    .btn-action-sm {
+      background: transparent; border: 1px solid var(--border); color: var(--text);
+      padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; text-decoration: none; transition: all 0.2s;
+    }
+    .btn-action-sm:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem; }
+    .filter-btn {
+      background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+      padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s;
+    }
+    .filter-btn.active, .filter-btn:hover { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+    .progress-track { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.3s ease; }
+    .meta-status { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); }
+    .grid-jump {
+      display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 1.25rem; padding: 0.75rem;
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); max-height: 135px; overflow-y: auto;
+    }
+    .grid-btn {
+      width: 28px; height: 28px; border-radius: 4px; border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .grid-btn.current { border-color: var(--accent); color: var(--accent); font-weight: bold; }
+    .grid-btn.answered-correct { background: var(--correct-bg); border-color: var(--correct-border); color: var(--correct-text); }
+    .grid-btn.answered-wrong { background: var(--wrong-bg); border-color: var(--wrong-border); color: var(--wrong-text); }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; margin-bottom: 1.25rem; }
+    .category-badge { display: inline-block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 0.75rem; font-weight: 600; }
+    .question-title { font-size: 1.15rem; color: var(--text-heading); margin-bottom: 1.25rem; font-weight: 500; }
+    .options-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+    .option-item {
+      display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.9rem 1rem;
+      background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 0.95rem; color: var(--text);
+    }
+    .option-item:hover:not(.disabled) { border-color: var(--accent); background: var(--accent-glow); }
+    .option-item.correct { background: var(--correct-bg) !important; border-color: var(--correct-border) !important; color: var(--correct-text) !important; }
+    .option-item.wrong { background: var(--wrong-bg) !important; border-color: var(--wrong-border) !important; color: var(--wrong-text) !important; }
+    .option-key { font-weight: 600; color: var(--text-muted); min-width: 1.25rem; }
+    .explanation-panel { margin-top: 1.25rem; padding: 1rem; border-radius: 6px; font-size: 0.9rem; display: none; line-height: 1.5; }
+    .explanation-panel.show { display: block; }
+    .explanation-panel.correct { background: var(--correct-bg); border: 1px solid var(--correct-border); color: var(--correct-text); }
+    .explanation-panel.wrong { background: var(--wrong-bg); border: 1px solid var(--wrong-border); color: var(--wrong-text); }
+    .nav-controls { display: flex; justify-content: space-between; margin-top: 1.5rem; }
+    .btn {
+      background: var(--accent); color: #ffffff; border: none; padding: 0.65rem 1.3rem;
+      border-radius: 6px; font-size: 0.9rem; font-weight: 500; cursor: pointer;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .summary-card { display: none; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; text-align: center; }
+    .summary-score { font-size: 3rem; font-weight: 700; color: var(--accent); margin: 1rem 0; }
+    .review-list { margin-top: 2rem; text-align: left; display: flex; flex-direction: column; gap: 1rem; }
+    .review-item { padding: 1rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; }
+    .review-item.pass { border-left: 4px solid var(--correct-border); }
+    .review-item.fail { border-left: 4px solid var(--wrong-border); }
+  </style>
+</head>
+<body data-theme="dark">
+<div class="container">
+  <header>
+    <div class="header-top">
+      <h1>Chapter 3: Porifera (Sponges)</h1>
+      <div class="nav-actions">
+        <a href="Zoology.html" class="btn-action-sm">← Portal Home</a>
+        <button class="btn-action-sm" onclick="toggleTheme()">Theme</button>
+      </div>
+    </div>
+    <div class="filter-bar" id="category-filters"></div>
+    <div class="progress-track"><div class="progress-fill" id="progress-bar"></div></div>
+    <div class="meta-status">
+      <span id="question-indicator">Question 1 of --</span>
+      <span id="score-indicator">Score: 0 / 0</span>
+    </div>
+  </header>
+
+  <div class="grid-jump" id="grid-jump"></div>
+
+  <div class="card" id="quiz-card">
+    <span class="category-badge" id="cat-badge">Category</span>
+    <h2 class="question-title" id="question-text">Question Prompt</h2>
+    <div class="options-grid" id="options-box"></div>
+    <div class="explanation-panel" id="explanation-box"></div>
+    <div class="nav-controls">
+      <button class="btn btn-secondary" id="prev-btn" onclick="prevQuestion()" disabled>&larr; Previous</button>
+      <button class="btn" id="next-btn" onclick="nextQuestion()">Next &rarr;</button>
+    </div>
+  </div>
+
+  <div class="summary-card" id="summary-card">
+    <h2>Chapter 3 Completed</h2>
+    <div class="summary-score" id="final-score-display">0%</div>
+    <p id="final-remark" style="color: var(--text-muted);"></p>
+    <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; justify-content: center;">
+      <a href="index.html" class="btn btn-secondary" style="text-decoration:none; display:inline-block;">Return Home</a>
+      <button class="btn" onclick="resetQuiz()">Retake Quiz</button>
+    </div>
+    <div class="review-list" id="review-container"></div>
+  </div>
+</div>
+
+<script>
+const questions = [
+  // --- INTRODUCTION & ETYMOLOGY ---
+  {
+    category: "Introduction",
+    q: "What is the etymological origin of the word 'Porifera'?",
+    options: ["Greek for 'sac-like'", "Latin for 'pore-bearing'", "Latin for 'water-filtering'", "Greek for 'glass-bodied'"],
+    answer: 1,
+    note: "The etymology is Latin porus (pore) + -ferre (to bear)[cite: 2]."
+  },
+
+  // --- CLASS CALCISPONGIAE ---
+  {
+    category: "Class Calcispongiae",
+    q: "What is the specific composition of the spicules in Class Calcispongiae?",
+    options: ["Silica", "Spongin", "Calcium carbonate", "Chitin"],
+    answer: 2,
+    note: "Spicule composition for Calcispongiae is Calcium carbonate[cite: 2]."
+  },
+  {
+    category: "Class Calcispongiae",
+    q: "How are the spicules structured in Class Calcispongiae?",
+    options: ["Six-rayed networks", "Straight (monaxons) or with three to four rays", "Complex branching patterns", "They completely lack spicules"],
+    answer: 1,
+    note: "Their spicule structure is straight (monaxons) or with three to four rays[cite: 2]."
+  },
+  {
+    category: "Class Calcispongiae",
+    q: "Which of the following are representative genera of Class Calcispongiae?",
+    options: ["Leucosolenia and Sycon", "Amoeba and Paramecium", "Spongillidae and Dictyostelium", "Trypanosoma and Trichonympha"],
+    answer: 0,
+    note: "Representative genera include Leucosolenia and Sycon[cite: 2]."
+  },
+  {
+    category: "Class Calcispongiae",
+    q: "What body organization types can be found within Class Calcispongiae?",
+    options: ["Only Asconoid", "Only Leuconoid", "Asconoid, syconoid, and leuconoid structures", "Only Syconoid"],
+    answer: 2,
+    note: "Body organization types include Asconoid, syconoid, and leuconoid structures[cite: 2]."
+  },
+
+  // --- CLASS HEXACTINELLIDA ---
+  {
+    category: "Class Hexactinellida",
+    q: "What is the alternative name for Class Hexactinellida?",
+    options: ["Class Demospongiae", "Class Hyalospongiae", "Class Spongillidae", "Class Coccidea"],
+    answer: 1,
+    note: "The alternative name is Class Hyalospongiae[cite: 2]."
+  },
+  {
+    category: "Class Hexactinellida",
+    q: "What type of spicules characterizes Class Hexactinellida?",
+    options: ["Calcium carbonate monaxons", "Six-rayed spicules of silica bound together to form a network", "Spongin fibers", "Absent spicules"],
+    answer: 1,
+    note: "They possess six-rayed spicules of silica bound together to form a network[cite: 2]."
+  },
+  {
+    category: "Class Hexactinellida",
+    q: "What is the primary habitat for nearly all members of Class Hexactinellida?",
+    options: ["Freshwater streams", "Coastal tide pools", "Deep-sea environments", "Terrestrial caves"],
+    answer: 2,
+    note: "Nearly all are deep-sea forms[cite: 2]."
+  },
+  {
+    category: "Class Hexactinellida",
+    q: "What unique cellular organization is found in Class Hexactinellida?",
+    options: ["Syncytial cell structure (multinucleate cytoplasm)", "Strictly unicellular organization", "Perfect bilateral symmetry", "Extensive extracellular matrix without nuclei"],
+    answer: 0,
+    note: "They have a syncytial cell structure — many nuclei within a large cell (multinucleate cytoplasm without cell membranes separating nuclei)[cite: 2]."
+  },
+
+  // --- CLASS DEMOSPONGIAE ---
+  {
+    category: "Class Demospongiae",
+    q: "Class Demospongiae is highly significant because it contains what percentage of all living sponge species?",
+    options: ["5%", "25%", "50%", "95%"],
+    answer: 3,
+    note: "It contains 95% of living sponge species and most large sponges[cite: 2]."
+  },
+  {
+    category: "Class Demospongiae",
+    q: "What is the composition of the spicules in Class Demospongiae?",
+    options: ["Always calcium carbonate", "Siliceous but not six-rayed, or bound by spongin, or completely absent", "Strictly six-rayed silica", "Chitinous network"],
+    answer: 1,
+    note: "Spicules are siliceous but not six-rayed; they may be absent or bound together by spongin[cite: 2]."
+  },
+  {
+    category: "Class Demospongiae",
+    q: "Which body form is found in ALL species of Class Demospongiae?",
+    options: ["Asconoid", "Syconoid", "Leuconoid", "Polyp"],
+    answer: 2,
+    note: "They exhibit a Leuconoid body form for all species[cite: 2]."
+  },
+  {
+    category: "Class Demospongiae",
+    q: "While almost all demosponges are marine, which family represents the only freshwater sponges?",
+    options: ["Leucosolenidae", "Syconidae", "Spongillidae", "Hexactinellidae"],
+    answer: 2,
+    note: "The Spongillidae family represents the only freshwater sponges[cite: 2]."
+  },
+
+  // --- ANATOMICAL STRUCTURES ---
+  {
+    category: "Anatomical Structures",
+    q: "What is the primary function of spicules in a sponge?",
+    options: ["To digest food particles", "To serve as support and skeletal elements", "To carry oxygen to deeper tissues", "To produce gametes"],
+    answer: 1,
+    note: "Spicules are support and skeletal elements of sponge bodies[cite: 2]."
+  },
+  {
+    category: "Anatomical Structures",
+    q: "Sponge collar cells, which are specialized feeding cells, are properly known as:",
+    options: ["Archeocytes", "Oocytes", "Choanocytes", "Parenchymula"],
+    answer: 2,
+    note: "Sponge collar cells are called Choanocytes[cite: 2]."
+  },
+  {
+    category: "Anatomical Structures",
+    q: "What specific structures make up the 'collar' of a choanocyte?",
+    options: ["Calcium carbonate spikes", "A network of spongin", "A collar of microvilli surrounding a flagellum", "Six-rayed silica threads"],
+    answer: 2,
+    note: "Choanocytes possess a collar of microvilli surrounding a flagellum[cite: 2]."
+  },
+  {
+    category: "Anatomical Structures",
+    q: "Which cells are directly responsible for generating water currents and operating the filter-feeding mechanism in sponges?",
+    options: ["Syncytial cells", "Gemmules", "Choanocytes", "Monaxons"],
+    answer: 2,
+    note: "Choanocytes generate water currents through the sponge body and are responsible for the filter-feeding mechanism[cite: 2]."
+  },
+
+  // --- BODY FORMS ---
+  {
+    category: "Body Forms",
+    q: "Which is the simplest sponge body form, typically found in some calcareous sponges?",
+    options: ["Syconoid", "Asconoid", "Leuconoid", "Syncytial"],
+    answer: 1,
+    note: "Asconoid is the simplest form; found in some calcareous sponges[cite: 2]."
+  },
+  {
+    category: "Body Forms",
+    q: "Which sponge body form is of intermediate complexity?",
+    options: ["Syconoid", "Asconoid", "Leuconoid", "Hyalospongiae"],
+    answer: 0,
+    note: "Syconoid is the intermediate complexity form; found in some calcareous sponges[cite: 2]."
+  },
+  {
+    category: "Body Forms",
+    q: "Which body form is the most complex and is found in all demosponges?",
+    options: ["Asconoid", "Syconoid", "Leuconoid", "Syncytial"],
+    answer: 2,
+    note: "Leuconoid is the most complex form; found in all demosponges and many other sponges[cite: 2]."
+  },
+
+  // --- PHYLOGENY & EVOLUTION ---
+  {
+    category: "Phylogeny",
+    q: "Evolutionarily, how are sponges related to other animals?",
+    options: ["They are completely unrelated to the animal kingdom", "They are considered a sister taxon to other animals", "They evolved directly from fungi", "They are the descendants of modern cnidarians"],
+    answer: 1,
+    note: "Sponges are considered a sister taxon to other animals, sharing many traits[cite: 2]."
+  },
+  {
+    category: "Phylogeny",
+    q: "Proteins for cell adhesion and cell-signaling in sponges show homology to:",
+    options: ["Plants", "Bacteria", "Other animals", "Fungi"],
+    answer: 2,
+    note: "Proteins for cell adhesion and cell-signaling are homologous to other animals[cite: 2]."
+  },
+  {
+    category: "Phylogeny",
+    q: "What evidence of cellular complexity links some sponges to other animal phyla?",
+    options: ["Presence of a true brain", "A basement membrane with collagen and adherens junctions with cadherin molecules", "The development of an exoskeleton", "A closed circulatory system"],
+    answer: 1,
+    note: "Some sponges have a basement membrane with collagen and adherens junctions with cadherin molecules that connect epithelial cells[cite: 2]."
+  },
+  {
+    category: "Phylogeny",
+    q: "Which developmental stages do sponges exhibit that are common to many other animals?",
+    options: ["Pupa and imago stages", "Blastula and some form gastrula stages", "Nymph stages", "Tadpole stages"],
+    answer: 1,
+    note: "Sponges exhibit blastula and some form gastrula stages like many other animals[cite: 2]."
+  },
+
+  // --- REPRODUCTION ---
+  {
+    category: "Asexual Reproduction",
+    q: "What happens during sponge fragmentation?",
+    options: ["The sponge releases a toxic cloud", "Sponge pieces can regenerate into complete organisms", "The sponge dissolves into single cells that die", "The sponge changes its color"],
+    answer: 1,
+    note: "In fragmentation, sponge pieces can regenerate into complete organisms[cite: 2]."
+  },
+  {
+    category: "Asexual Reproduction",
+    q: "What are gemmules?",
+    options: ["Sperm cells", "Specialized structures for internal budding in freshwater sponges", "External buds that fall off immediately", "The name for sponge eggs"],
+    answer: 1,
+    note: "Internal buds/gemmules are specialized structures in freshwater sponges[cite: 2]."
+  },
+  {
+    category: "Asexual Reproduction",
+    q: "What types of cells are contained inside a gemmule?",
+    options: ["Choanocytes and spicules", "Archeocytes and nutritive cells", "Nerve cells and muscle cells", "Epithelial cells only"],
+    answer: 1,
+    note: "Gemmules contain archeocytes and nutritive cells[cite: 2]."
+  },
+  {
+    category: "Asexual Reproduction",
+    q: "What is the primary evolutionary advantage of producing gemmules?",
+    options: ["They allow for rapid swimming", "They attract mates for sexual reproduction", "They can survive harsh conditions and germinate when conditions improve", "They produce venom to deter predators"],
+    answer: 2,
+    note: "Gemmules can survive harsh conditions and germinate when conditions improve[cite: 2]."
+  },
+  {
+    category: "Sexual Reproduction",
+    q: "What is the breeding system of most sponges?",
+    options: ["Dioecious (separate sexes)", "Monoecious (hermaphroditic)", "Parthenogenetic", "Asexual only"],
+    answer: 1,
+    note: "Breeding system: Most sponges are monoecious (hermaphroditic)[cite: 2]."
+  },
+  {
+    category: "Sexual Reproduction",
+    q: "From which cells do gametes (sperm and eggs) develop in sponges?",
+    options: ["Only from epithelial cells", "From choanocytes or archaeocytes", "From spicules", "From the syncytium"],
+    answer: 1,
+    note: "Gametes develop from choanocytes or archaeocytes[cite: 2]."
+  },
+  {
+    category: "Sexual Reproduction",
+    q: "Because the zygote is retained within the parent body and provided with nourishment until released as a larva, most sponges are considered:",
+    options: ["Oviparous", "Viviparous", "Asexual", "Spore-producing"],
+    answer: 1,
+    note: "Most sponges are viviparous; the zygote is retained, nourished, and released as a ciliated larva[cite: 2]."
+  },
+  {
+    category: "Sexual Reproduction",
+    q: "During the fertilization process, after sperm enters a sponge through its pores, what happens next?",
+    options: ["It swims directly to the egg", "It dissolves the spicules", "Choanocytes phagocytize (engulf) the sperm and transport it through the mesohyl", "It forms a new external bud immediately"],
+    answer: 2,
+    note: "Choanocytes phagocytize (engulf) the sperm, which is then transported through the mesohyl to oocytes[cite: 2]."
+  },
+  {
+    category: "Larval Forms",
+    q: "What is the specific type of larva found in most sponges?",
+    options: ["Planula larva", "Free-swimming parenchymula larva", "Tadpole larva", "Nymph"],
+    answer: 1,
+    note: "The larval type is a free-swimming parenchymula larva in most sponges[cite: 2]."
+  },
+  {
+    category: "Larval Forms",
+    q: "While most sponges are viviparous, some are oviparous. What does an oviparous sponge do?",
+    options: ["Releases only sperm into the air", "Releases both sperm and oocytes into the water for external fertilization", "Retains the embryo until it is a fully formed adult", "Reproduces solely by fragmentation"],
+    answer: 1,
+    note: "Some sponges are oviparous, releasing both sperm and oocytes into water for external fertilization[cite: 2]."
+  }
+];
+
+let activeFilter = "ALL", filteredQuestions = [], currentIndex = 0, userAnswers = {};
+
+function init() { buildCategoryFilters(); filterQuestionSet(); }
+
+function buildCategoryFilters() {
+  const container = document.getElementById("category-filters");
+  container.innerHTML = "";
+  const categories = ["ALL", ...new Set(questions.map(q => q.category))];
+  categories.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = `filter-btn ${cat === activeFilter ? "active" : ""}`;
+    btn.textContent = cat === "ALL" ? `All Topics (${questions.length})` : cat;
+    btn.onclick = () => { activeFilter = cat; filterQuestionSet(); buildCategoryFilters(); };
+    container.appendChild(btn);
+  });
+}
+
+function filterQuestionSet() {
+  filteredQuestions = activeFilter !== "ALL" ? questions.filter(q => q.category === activeFilter) : [...questions];
+  currentIndex = 0; userAnswers = {}; initGrid(); renderQuestion();
+}
+
+function initGrid() {
+  const grid = document.getElementById("grid-jump");
+  grid.innerHTML = "";
+  filteredQuestions.forEach((_, idx) => {
+    const btn = document.createElement("button");
+    btn.className = "grid-btn"; btn.textContent = idx + 1;
+    btn.onclick = () => jumpToQuestion(idx);
+    grid.appendChild(btn);
+  });
+}
+
+function updateGridStyles() {
+  const btns = document.querySelectorAll(".grid-btn");
+  btns.forEach((btn, idx) => {
+    btn.className = "grid-btn";
+    if (idx === currentIndex) btn.classList.add("current");
+    if (userAnswers[idx] !== undefined) {
+      if (userAnswers[idx] === filteredQuestions[idx].answer) btn.classList.add("answered-correct");
+      else btn.classList.add("answered-wrong");
+    }
+  });
+}
+
+function renderQuestion() {
+  const item = filteredQuestions[currentIndex];
+  document.getElementById("cat-badge").textContent = item.category;
+  document.getElementById("question-text").textContent = item.q;
+  document.getElementById("question-indicator").textContent = `Question ${currentIndex + 1} of ${filteredQuestions.length}`;
+  
+  const optionsBox = document.getElementById("options-box");
+  optionsBox.innerHTML = "";
+  const expBox = document.getElementById("explanation-box");
+  expBox.className = "explanation-panel"; expBox.innerHTML = "";
+
+  const hasAnswered = userAnswers[currentIndex] !== undefined;
+  item.options.forEach((opt, idx) => {
+    const div = document.createElement("div");
+    div.className = "option-item";
+    if (hasAnswered) div.classList.add("disabled");
+    div.innerHTML = `<span class="option-key">${String.fromCharCode(65 + idx)}.</span><span>${opt}</span>`;
+    if (hasAnswered) {
+      if (idx === item.answer) div.classList.add("correct");
+      if (userAnswers[currentIndex] === idx && idx !== item.answer) div.classList.add("wrong");
+    } else {
+      div.onclick = () => { if (userAnswers[currentIndex] === undefined) { userAnswers[currentIndex] = idx; renderQuestion(); } };
+    }
+    optionsBox.appendChild(div);
+  });
+
+  if (hasAnswered) {
+    const isCorr = userAnswers[currentIndex] === item.answer;
+    expBox.classList.add("show", isCorr ? "correct" : "wrong");
+    expBox.innerHTML = `<strong>${isCorr ? "✓ Correct!" : "✗ Incorrect."}</strong> ${item.note}`;
+  }
+
+  document.getElementById("prev-btn").disabled = currentIndex === 0;
+  document.getElementById("next-btn").textContent = (currentIndex === filteredQuestions.length - 1) ? "Finish & Review" : "Next →";
+  
+  const corrCount = Object.keys(userAnswers).filter(k => userAnswers[k] === filteredQuestions[k].answer).length;
+  document.getElementById("score-indicator").textContent = `Score: ${corrCount} / ${Object.keys(userAnswers).length}`;
+  document.getElementById("progress-bar").style.width = `${((currentIndex + 1) / filteredQuestions.length) * 100}%`;
+  updateGridStyles();
+}
+
+function jumpToQuestion(idx) { currentIndex = idx; renderQuestion(); }
+function prevQuestion() { if (currentIndex > 0) { currentIndex--; renderQuestion(); } }
+function nextQuestion() {
+  if (currentIndex < filteredQuestions.length - 1) { currentIndex++; renderQuestion(); }
+  else {
+    document.getElementById("quiz-card").style.display = "none";
+    document.getElementById("summary-card").style.display = "block";
+    const total = filteredQuestions.length;
+    const corr = Object.keys(userAnswers).filter(k => userAnswers[k] === filteredQuestions[k].answer).length;
+    const pct = Math.round((corr / total) * 100) || 0;
+    document.getElementById("final-score-display").textContent = `${pct}% (${corr}/${total})`;
+    document.getElementById("final-remark").textContent = pct >= 80 ? "Great job mastering Chapter 3!" : "Review your notes and try again.";
+    
+    const reviewBox = document.getElementById("review-container");
+    reviewBox.innerHTML = "";
+    filteredQuestions.forEach((item, idx) => {
+      const uChoice = userAnswers[idx];
+      const isCorr = uChoice === item.answer;
+      const d = document.createElement("div");
+      d.className = `review-item ${isCorr ? "pass" : "fail"}`;
+      d.innerHTML = `<strong>Q${idx + 1}: ${item.q}</strong><br/><span style="color:${isCorr?"var(--correct-text)":"var(--wrong-text)"}">Your Answer: ${uChoice !== undefined ? item.options[uChoice] : "Unanswered"}</span><br/>${!isCorr?`Correct: <strong>${item.options[item.answer]}</strong><br/>`:''}<small style="color:var(--text-muted);">${item.note}</small>`;
+      reviewBox.appendChild(d);
+    });
+  }
+}
+
+function resetQuiz() {
+  userAnswers = {}; currentIndex = 0;
+  document.getElementById("summary-card").style.display = "none";
+  document.getElementById("quiz-card").style.display = "block";
+  renderQuestion();
+}
+
+function toggleTheme() {
+  const cur = document.body.getAttribute("data-theme");
+  document.body.setAttribute("data-theme", cur === "light" ? "dark" : "light");
+}
+
+window.onload = init;
+</script>
+</body>
+</html>
